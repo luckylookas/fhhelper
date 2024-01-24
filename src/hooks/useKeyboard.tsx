@@ -3,7 +3,7 @@ import {useCallback, useEffect} from "react";
 
 export interface Handler {
     keys: string[]
-    action: (() => void)[]
+    action: (() => Promise<any>)[]
 }
 
 export const useKeyboard  = (handlers: Handler[]) => {
@@ -16,7 +16,7 @@ export const useKeyboard  = (handlers: Handler[]) => {
             const alt = event.altKey
             const key = event.code.substring(event.code.length-1).toLowerCase()
             const keyFull = event.code.toLowerCase()
-            handlers.find(handler => (handler.keys.includes(key)|| handler.keys.includes(keyFull)))?.action[alt ? 1 : 0]()
+            handlers.find(handler => (handler.keys.includes(key)|| handler.keys.includes(keyFull)))?.action[alt ? 1 : 0]().catch(console.log)
 
     }, [handlers])
 

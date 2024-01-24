@@ -23,7 +23,7 @@ module.exports = {
                 'dark': '#57523c',
                 'main': '#FBF1C7',
                 'light': '#fff6e1',
-                'highlight': '#FBF1C799',
+                'highlight': '#57523c',
                 'text': '#3C3836',
                 'ctext': '#FBF1C7',
                 'red': '#9D0006',

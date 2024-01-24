@@ -4,7 +4,7 @@ import {Search} from "./components/search/search";
 import {useSearch} from "./hooks/useSearch";
 import {useFirebase} from "./hooks/useFirebase";
 import {useSession} from "./hooks/useSession";
-import {ELITE, NORMAL, Rank} from "./model/model";
+import {ELITE, Level, NORMAL, Rank} from "./model/model";
 import {Handler, useKeyboard} from "./hooks/useKeyboard";
 
 const colors = ['red', 'green', 'blue', 'purple']
@@ -26,6 +26,7 @@ function App() {
     const [chosenColor, setChosenColor] = useState<number>()
     const [chosenToken, setChosenToken] = useState<number>()
 
+    const [blevel, setbLevel] = useState<Level|undefined>(session.level)
 
     const [theme, setTheme] = useState(0)
     const [seethrough, setseethrough] = useState(false);
@@ -50,56 +51,55 @@ function App() {
 
     const addHandler = useCallback((rank: Rank, amount: number) => {
         if (chosenColor === undefined || chosenToken === undefined) {
-            return
+            return Promise.resolve()
         }
         if (!session.list[chosenColor].tokenHp[chosenToken - 1]) {
-            session.createToken(session.list[chosenColor], rank, chosenToken)
+            return session.createToken(session.list[chosenColor], rank, chosenToken)
         } else {
-            session.setTokenHp(session.list[chosenColor], chosenToken, session.list[chosenColor].tokenHp[chosenToken - 1] + amount)
+            return session.setTokenHp(session.list[chosenColor], chosenToken, session.list[chosenColor].tokenHp[chosenToken - 1] + amount)
         }
     }, [session, chosenToken, chosenColor])
     const numberHandlers = useMemo(() => Array(10).fill(0).map((_, number) => (
         {
             keys: [`${number}`],
-            action: [() => setChosenToken(number ? number : 10), () => {
+            action: [() => new Promise(() => setChosenToken(number ? number : 10)), () => {
                 switch (number) {
                     case 1:
-                        session.setElement({earth: session.elements?.earth ? 0 : 2})
-                        break;
+                        return session.setElement({earth: session.elements?.earth ? 0 : 2})
                     case 2:
-                        session.setElement({wind: session.elements?.wind ? 0 : 2})
-                        break;
+                        return session.setElement({wind: session.elements?.wind ? 0 : 2})
                     case 3:
-                        session.setElement({fire: session.elements?.fire ? 0 : 2})
-                        break;
+                        return session.setElement({fire: session.elements?.fire ? 0 : 2})
                     case 4:
-                        session.setElement({ice: session.elements?.ice ? 0 : 2})
-                        break;
+                        return session.setElement({ice: session.elements?.ice ? 0 : 2})
                     case 5:
-                        session.setElement({light: session.elements?.light ? 0 : 2})
-                        break;
+                        return session.setElement({light: session.elements?.light ? 0 : 2})
                     case 6:
-                        session.setElement({dark: session.elements?.dark ? 0 : 2})
-                        break;
+                        return session.setElement({dark: session.elements?.dark ? 0 : 2})
+                    default:
+                        return Promise.resolve()
                 }
             }
             ]
         } as Handler
     )), [session])
+
     const colorHandlers = useMemo(() => colors.map(color => (
         {
             keys: [color.toLowerCase().substring(0, 1)],
-            action: [() => setChosenColor(prev => {
-                if (prev !== colors.indexOf(color)) {
-                    setChosenToken(undefined)
-                }
-                return colors.indexOf(color)
-            }), () => setChosenColor(prev => {
-                if (prev !== colors.indexOf(color)) {
-                    setChosenToken(undefined)
-                }
-                return colors.indexOf(color)
-            })]
+            action: [
+                () => new Promise(() => setChosenColor(prev => {
+                    if (prev !== colors.indexOf(color)) {
+                        setChosenToken(undefined)
+                    }
+                    return colors.indexOf(color)
+                })),
+                () => new Promise(() => setChosenColor(prev => {
+                    if (prev !== colors.indexOf(color)) {
+                        setChosenToken(undefined)
+                    }
+                    return colors.indexOf(color)
+                }))]
         } as Handler
     )), [])
     const handlers = useMemo(() => [
@@ -134,7 +134,8 @@ function App() {
                             setPassword(bpassword)
                         }}>login
                     </div>
-                    <div className={`basis-1/8 mx-80 text-center text-2xs text-red ${error ? '' : 'h-0'}`}>{error ? error : ''}</div>
+                    <div
+                        className={`basis-1/8 mx-80 text-center text-2xs text-red ${error ? '' : 'h-0'}`}>{error ? error : ''}</div>
                 </div>
             </div>
             :
@@ -142,7 +143,7 @@ function App() {
 
                 <div id='buttons' className={'fixed bottom-0 flex-row flex gap-1 pb-1 ps-1'}>
                     <div className={`text-2xs bg-light hover:bg-dark hover:text-ctext p-1 px-1 cursor-pointer`}
-                         onClick={() => session.newSession(1)}>new session
+                         onClick={async () => await session.resetSession()}>reset
                     </div>
                     <div className={`text-2xs bg-light hover:bg-dark hover:text-ctext p-1 px-1 cursor-pointer`}
                          onClick={() => setTheme(prev => {
@@ -156,19 +157,27 @@ function App() {
                          })}>{seethrough ? 'solid' : 'seethrough'}</div>
                     <div className={`text-2xs bg-light hover:bg-dark hover:text-ctext p-1 px-1 cursor-pointer`}
 
-                         onClick={() => {
+                         onClick={async () => {
                              localStorage.setItem("sessionId", bsessionId)
-                            setSessionId(bsessionId)
-                        }}>switch session
+                             setSessionId(bsessionId)
+                             if (blevel) {
+                                 await session.setLevel(blevel)
+                             }
+                         }}>switch session
                     </div>
-                    <input className='basis-1/8 text-2xs border-text border-solid border-b-2 rounded-none' placeholder='session' value={bsessionId} onChange={e => setbSessionId(e.target.value)}/>
+                    <input className='basis-1/8 text-2xs border-text border-solid border-b-2 rounded-none'
+                           placeholder='session' value={bsessionId} onChange={e => setbSessionId(e.target.value)}/>
+                    <p className='text-2xs pt-1'> at level </p>
+                    <input className='basis-1/8 text-2xs border-text border-solid border-b-2 rounded-none'
+                           placeholder='level' value={blevel} onChange={e => setbLevel(parseInt(e.target.value, 10) as Level)}/>
 
                 </div>
-                {session.round === 0 ? <Search {...search} onResultClick={session.add}/> : null}
+                {session.round === 0 ?
+                    <Search {...search} onResultClick={async (result) => await session.add(result)}/> : null}
                 <div id='round' className='flex flex-row h-8 gap-2 w-full justify-center content-around'>
                     <div
                         className={` px-5 ${session.round ? 'cursor-pointer bg-light hover:bg-dark hover:text-ctext' : 'cursor-not-allowed bg-light'}`}
-                        onClick={session.back}>←
+                        onClick={async () => await session.back()}>←
                     </div>
                     <div className={`pt-2 text-xs`}>{session.round ? `round ${session.round}` : `setup`}</div>
                     <div className={`bg-light hover:bg-dark hover:text-ctext px-5 cursor-pointer`}
@@ -177,34 +186,34 @@ function App() {
                 </div>
                 <div id='elements' className='flex flex-row gap-2 w-full justify-center content-around'>
                     <div id='earth'
-                         className={`${!session.elements?.earth ? 'opacity-10 max-h-10 min-h-10 max-w-10 max-h-10' : (session.elements?.earth === 1 ? 'm-3 max-h-6 min-h-6 max-w-6 max-h-6' : 'max-h-10 min-h-10 max-w-10 max-h-10')} shadow shadow-elementearth flex-auto bg-elementearth rounded-full`}
-                         onClick={() => {
-                             session.setElement({earth: session.elements?.earth ? 0 : 2})
+                         className={`${!session.elements?.earth ? 'opacity-10 max-h-10 min-h-10 max-w-10 max-h-10' : (session.elements?.earth === 1 ? 'mt-4 max-h-6 min-h-6 max-w-6 max-h-6' : 'max-h-10 min-h-10 max-w-10 max-h-10')} shadow shadow-elementearth flex-auto bg-elementearth rounded-full`}
+                         onClick={async () => {
+                             await session.setElement({earth: session.elements?.earth ? 0 : 2})
                          }}></div>
                     <div id='wind'
-                         className={`${!session.elements?.wind ? 'opacity-10 max-h-10 min-h-10 max-w-10 max-h-10' : (session.elements?.wind === 1 ? 'm-3 max-h-6 min-h-6 max-w-6 max-h-6' : 'max-h-10 min-h-10 max-w-10 max-h-10')} shadow shadow-elementwind flex-auto bg-elementwind rounded-full `}
-                         onClick={() => {
-                             session.setElement({wind: session.elements?.wind ? 0 : 2})
+                         className={`${!session.elements?.wind ? 'opacity-10 max-h-10 min-h-10 max-w-10 max-h-10' : (session.elements?.wind === 1 ? 'mt-4 max-h-6 min-h-6 max-w-6 max-h-6' : 'max-h-10 min-h-10 max-w-10 max-h-10')} shadow shadow-elementwind flex-auto bg-elementwind rounded-full `}
+                         onClick={async () => {
+                             await session.setElement({wind: session.elements?.wind ? 0 : 2})
                          }}></div>
                     <div id='fire'
-                         className={`${!session.elements?.fire ? 'opacity-10 max-h-10 min-h-10 max-w-10 max-h-10' : (session.elements?.fire === 1 ? 'm-3 max-h-6 min-h-6 max-w-6 max-h-6' : 'max-h-10 min-h-10 max-w-10 max-h-10')} shadow shadow-elementfire flex-auto bg-elementfire rounded-full`}
-                         onClick={() => {
-                             session.setElement({fire: session.elements?.fire ? 0 : 2})
+                         className={`${!session.elements?.fire ? 'opacity-10 max-h-10 min-h-10 max-w-10 max-h-10' : (session.elements?.fire === 1 ? 'mt-4 max-h-6 min-h-6 max-w-6 max-h-6' : 'max-h-10 min-h-10 max-w-10 max-h-10')} shadow shadow-elementfire flex-auto bg-elementfire rounded-full`}
+                         onClick={async () => {
+                             await session.setElement({fire: session.elements?.fire ? 0 : 2})
                          }}></div>
                     <div id='ice'
-                         className={`${!session.elements?.ice ? 'opacity-10 max-h-10 min-h-10 max-w-10 max-h-10' : (session.elements?.ice === 1 ? 'm-3 max-h-6 min-h-6 max-w-6 max-h-6' : 'max-h-10 min-h-10 max-w-10 max-h-10')} shadow shadow-elementice flex-auto bg-elementice rounded-full`}
-                         onClick={() => {
-                             session.setElement({ice: session.elements?.ice ? 0 : 2})
+                         className={`${!session.elements?.ice ? 'opacity-10 max-h-10 min-h-10 max-w-10 max-h-10' : (session.elements?.ice === 1 ? 'mt-4 max-h-6 min-h-6 max-w-6 max-h-6' : 'max-h-10 min-h-10 max-w-10 max-h-10')} shadow shadow-elementice flex-auto bg-elementice rounded-full`}
+                         onClick={async () => {
+                             await session.setElement({ice: session.elements?.ice ? 0 : 2})
                          }}></div>
                     <div id='light'
-                         className={`${!session.elements?.light ? 'opacity-10 max-h-10 min-h-10 max-w-10 max-h-10' : (session.elements?.light === 1 ? 'm-3 max-h-6 min-h-6 max-w-6 max-h-6' : 'max-h-10 min-h-10 max-w-10 max-h-10')} shadow shadow-elementlight flex-auto bg-elementlight rounded-full`}
-                         onClick={() => {
-                             session.setElement({light: session.elements?.light ? 0 : 2})
+                         className={`${!session.elements?.light ? 'opacity-10 max-h-10 min-h-10 max-w-10 max-h-10' : (session.elements?.light === 1 ? 'mt-4 max-h-6 min-h-6 max-w-6 max-h-6' : 'max-h-10 min-h-10 max-w-10 max-h-10')} shadow shadow-elementlight flex-auto bg-elementlight rounded-full`}
+                         onClick={async () => {
+                             await session.setElement({light: session.elements?.light ? 0 : 2})
                          }}></div>
                     <div id='dark'
-                         className={`${!session.elements?.dark ? 'opacity-10 max-h-10 min-h-10 max-w-10 max-h-10' : (session.elements?.dark === 1 ? 'm-3 max-h-6 min-h-6 max-w-6 max-h-6' : 'max-h-10 min-h-10 max-w-10 max-h-10')} shadow shadow-elementdark flex-auto bg-elementdark rounded-full`}
-                         onClick={() => {
-                             session.setElement({dark: session.elements?.dark ? 0 : 2})
+                         className={`${!session.elements?.dark ? 'opacity-10 max-h-10 min-h-10 max-w-10 max-h-10' : (session.elements?.dark === 1 ? 'mt-4 max-h-6 min-h-6 max-w-6 max-h-6' : 'max-h-10 min-h-10 max-w-10 max-h-10')} shadow shadow-elementdark flex-auto bg-elementdark rounded-full`}
+                         onClick={async () => {
+                             await session.setElement({dark: session.elements?.dark ? 0 : 2})
                          }}></div>
                 </div>
 
@@ -212,7 +221,7 @@ function App() {
                     {session.list.map((monster, monsterIndex) =>
                         <ol className='flex flex-col flex-1'>
                             <li className='flex flex-col flex-auto'>
-                                <h2 onClick={() => session.remove(monster.monster)}
+                                <h2 onClick={async () => await session.remove(monster.monster)}
                                     className={`${seethrough ? `bg-${colors[monsterIndex % 4]}` : 'bg-inherit'} py-2 text-base text-center cursor-pointer hover:line-through`}>{monster.monster.name}</h2>
 
                                 <ol className={`${seethrough ? `border-t-8 border-2 border-solid border-${colors[monsterIndex % 4]}` : `bg-${colors[monsterIndex % 4]}`} ${chosenColor === monsterIndex && chosenToken === undefined ? 'shadow-glow shadow-highlight z-10' : 'z-1'}`}
@@ -307,7 +316,7 @@ function App() {
                                          flex ${token.hp ? 'flex-row' : 'flex-col'} 
                                 pt-2 pr-2`}>
                                             <div
-                                                onClick={() => session.removeToken(monster, tokenIndex + 1)}
+                                                onClick={async () => await session.removeToken(monster, tokenIndex + 1)}
                                                 className={`flex text-center bg-transparent ${token.hp ? 'hover:line-through cursor-pointer w-8' : ''}`}>
                                         <span
                                             className=' text-center align-center flex-1 bg-inherit flex justify-center p-1'>{tokenIndex + 1}</span>
