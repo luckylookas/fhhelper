@@ -138,7 +138,7 @@ function App() {
             action: [() => addHandler(NORMAL, -1), () => addHandler(ELITE, -1)]
         },
 
-    ], [colorHandlers, numberHandlers, addHandler])
+    ], [controlHandlers, colorHandlers, numberHandlers, addHandler])
     useKeyboard(handlers, keyBoardActive)
 
     return <div data-theme={themes[theme]} className='w-screen h-screen'>
