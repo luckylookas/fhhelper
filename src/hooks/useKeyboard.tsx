@@ -6,11 +6,11 @@ export interface Handler {
     action: (() => Promise<any>)[]
 }
 
-export const useKeyboard  = (handlers: Handler[]) => {
+export const useKeyboard  = (handlers: Handler[], active: boolean) => {
 
     const handler = useCallback(
         (event: KeyboardEvent) => {
-            if (event.isComposing || !event.code) {
+            if (event.isComposing || !event.code || !active) {
                 return;
             }
             const alt = event.altKey

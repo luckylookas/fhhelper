@@ -26,7 +26,7 @@ function App() {
     const [chosenColor, setChosenColor] = useState<number>()
     const [chosenToken, setChosenToken] = useState<number>()
 
-    const [blevel, setbLevel] = useState<Level|undefined>(session.level)
+    const [blevel, setbLevel] = useState<Level | undefined>(session.level)
 
     const [theme, setTheme] = useState(0)
     const [seethrough, setseethrough] = useState(false);
@@ -83,7 +83,6 @@ function App() {
             ]
         } as Handler
     )), [session])
-
     const colorHandlers = useMemo(() => colors.map(color => (
         {
             keys: [color.toLowerCase().substring(0, 1)],
@@ -102,9 +101,34 @@ function App() {
                 }))]
         } as Handler
     )), [])
+    const controlHandlers = useMemo(() => ([
+        {
+            keys: ['z'],
+            action: [() => new Promise(() => session.advanceRound()), () => new Promise(() => session.back())]
+        },
+        {
+            keys: ['k'],
+            action: [() => new Promise(() => session.resetSession()), () => new Promise(() => session.resetSession())]
+        },
+        {
+            keys: ['m'],
+            action: [() => new Promise(() =>
+                setTheme(prev => {
+                    localStorage.setItem("theme", `${(prev + 1) % themes.length}`)
+                    return (prev + 1) % themes.length
+                })
+            ), () => new Promise(() => setseethrough(prev => {
+                localStorage.setItem("seethrough", `${!prev}`)
+                return !prev
+            }))]
+        },
+    ]), [session])
+    const [keyBoardActive, setKeyBoardActive] = useState(true)
+
     const handlers = useMemo(() => [
         ...colorHandlers,
         ...numberHandlers,
+        ...controlHandlers,
         {
             keys: ['numpadadd', '+', 'equal', '_', 'a'],
             action: [() => addHandler(NORMAL, 1), () => addHandler(ELITE, 1)]
@@ -113,8 +137,9 @@ function App() {
             keys: ['numpadsubtract', '-', 's'],
             action: [() => addHandler(NORMAL, -1), () => addHandler(ELITE, -1)]
         },
+
     ], [colorHandlers, numberHandlers, addHandler])
-    useKeyboard(handlers)
+    useKeyboard(handlers, keyBoardActive)
 
     return <div data-theme={themes[theme]} className='w-screen h-screen'>
         {!firebaseApp ?
@@ -123,8 +148,13 @@ function App() {
                     className='border-red border-purple border-green border-blue bg-red bg-green bg-blue bg-purple h-0'></div>
                 <div className='w-screen gap-2 h-screen flex flex-col p-2 z-10 content-center  justify-center'>
                     <input className='basis-1/8 mx-80 text-xs border-text border-solid border-b-2 rounded-none'
-                           placeholder='email' onChange={e => setbEmail(e.target.value)}/>
+                           placeholder='email'
+                           onInput={() => setKeyBoardActive(false)}
+                           onBlur={() => setKeyBoardActive(true)}
+                           onChange={e => setbEmail(e.target.value)}/>
                     <input type={'password'}
+                           onInput={() => setKeyBoardActive(false)}
+                           onBlur={() => setKeyBoardActive(true)}
                            className='mx-80 basis-1/8 text-xs border-text border-solid border-b-2 rounded-none'
                            placeholder='password' onChange={e => setbPassword(e.target.value)}/>
                     <div
@@ -166,14 +196,22 @@ function App() {
                          }}>switch session
                     </div>
                     <input className='basis-1/8 text-2xs border-text border-solid border-b-2 rounded-none'
+                           onInput={() => setKeyBoardActive(false)}
+                           onBlur={() => setKeyBoardActive(true)}
                            placeholder='session' value={bsessionId} onChange={e => setbSessionId(e.target.value)}/>
                     <p className='text-2xs pt-1'> at level </p>
                     <input className='basis-1/8 text-2xs border-text border-solid border-b-2 rounded-none'
-                           placeholder='level' value={blevel} onChange={e => setbLevel(parseInt(e.target.value, 10) as Level)}/>
+                           onInput={() => setKeyBoardActive(false)}
+                           onBlur={() => setKeyBoardActive(true)}
+                           placeholder='level' value={blevel}
+                           onChange={e => setbLevel(parseInt(e.target.value, 10) as Level)}/>
 
                 </div>
                 {session.round === 0 ?
-                    <Search {...search} onResultClick={async (result) => await session.add(result)}/> : null}
+                    <Search {...search}
+                            onInput={() => setKeyBoardActive(false)}
+                            onBlur={() => setKeyBoardActive(true)}
+                            onResultClick={async (result) => await session.add(result)}/> : null}
                 <div id='round' className='flex flex-row h-8 gap-2 w-full justify-center content-around'>
                     <div
                         className={` px-5 ${session.round ? 'cursor-pointer bg-light hover:bg-dark hover:text-ctext' : 'cursor-not-allowed bg-light'}`}
