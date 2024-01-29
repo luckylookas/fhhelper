@@ -1,5 +1,5 @@
 export type Rank = 0|1;
-export type Level = 1 | 2 | 3 | 4 | 5 | 6 | 7
+export type Level = 0| 1 | 2 | 3 | 4 | 5 | 6 | 7
 
 export const NORMAL: Rank = 0;
 export const ELITE: Rank = 1;
@@ -80,3 +80,18 @@ export function hydrateSessionMonster(monster: Monster, sessionMonster: Firebase
     } as SessionMonster
 }
 
+export interface Building {
+    id: string
+    name: string
+    level: number
+    defenseBonus: number
+    effect: string
+}
+
+export interface Town {
+    id: string
+    name: string
+    prosperity: number
+    buildings: Building[]
+    morale: number
+}

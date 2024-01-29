@@ -17,8 +17,7 @@ export const useKeyboard  = (handlers: Handler[], active: boolean) => {
             const key = event.code.substring(event.code.length-1).toLowerCase()
             const keyFull = event.code.toLowerCase()
             handlers.find(handler => (handler.keys.includes(key)|| handler.keys.includes(keyFull)))?.action[alt ? 1 : 0]().catch(console.log)
-
-    }, [handlers])
+    }, [handlers, active])
 
     useEffect(() => {
         document.onkeydown = null

@@ -1,5 +1,5 @@
 import React from "react";
-import { Monster } from "../../model/model";
+import { Monster } from "../model/model";
 
 interface Props {
     search: (term: string) => void
