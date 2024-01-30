@@ -29,7 +29,7 @@ export const SwitchSession = ({close, currentSession, currentLevel, trigger}: Pr
             }
             close()
         }
-    }, [phase, close, sessionId, level])
+    }, [phase, close, sessionId, level, trigger])
 
     useKeyboard([
         {

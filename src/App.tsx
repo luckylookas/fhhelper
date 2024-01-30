@@ -16,6 +16,25 @@ import {useTown} from "./hooks/useTown";
 const colors = ['red', 'green', 'blue', 'purple']
 const themes = ['light', 'dark']
 
+function mapMoraleToDefense(morale: number): number {
+   if (morale < 3) {
+       return -10
+   }
+   if (morale < 5) {
+       return -5
+   }
+    if (morale < 8) {
+        return 0
+    }
+    if (morale < 11) {
+        return 5
+    }
+    if (morale < 14) {
+        return 10
+    }
+    return 15
+}
+
 function App() {
     const townName = useMemo(() => {
         return new URLSearchParams(window.location.search).get("town") ?? "lastChristmateers"
@@ -32,7 +51,7 @@ function App() {
     const {firebaseApp, error} = useFirebase(email, password);
     const session = useSession(firebaseApp, sessionId);
     const search = useSearch(firebaseApp, session.list);
-    const {town} = useTown(firebaseApp, townName)
+    const {town, repair, upgrade} = useTown(firebaseApp, townName)
 
 
     const [chosenColor, setChosenColor] = useState<number>()
@@ -121,7 +140,12 @@ function App() {
         },
         {
             keys: ['k'],
-            action: [() => new Promise(() => session.resetSession()), () => new Promise(() => session.resetSession())]
+            action: [() => new Promise(() => session.resetSession()), () => new Promise(() => {
+                setPhase(prev => {
+                    setSwitchSession(prev === 'town')
+                    return prev === 'town' ? 'scenario' : 'town'
+                })
+            })]
         },
         {
             keys: ['m'],
@@ -181,10 +205,6 @@ function App() {
                     {
                         phase === 'scenario' ?
                             <>
-                                <Button onClick={() => {
-                                    setKeyBoardActive(false)
-                                    setSwitchSession(true)
-                                }} label={`switch session`}/>
                                 <Button onClick={async () => await session.resetSession()} label={'reset'}/>
                                 <Button onClick={() => setPhase('town')} label={`end scenario`}/>
                             </>
@@ -376,28 +396,33 @@ function App() {
                             </div>
                         </>
                         :
-                        <div className={'p-5 flex flex-col justify-center items-center'}>
-                            <div className={'p-5 flex flex-col gap-2 items-center'}>
-                                <div className={'flex flex-auto flex-row'}>{town.name}</div>
-                                <div className={'flex flex-row justify-between w-full'}><div>prosperity:</div><div className={'text-right'}>{town.prosperity}</div></div>
-                                <div className={'flex flex-row justify-between w-full'}><div>morale:</div><div className={'text-right'}>{town.morale}</div></div>
-                                <div className={'flex flex-row justify-between w-full'}><div>defense:</div><div className={'text-right'}>{town.morale + town.buildings.filter(it => it.defenseBonus).map(it => it.defenseBonus).reduce((a: number,b: number) => a+b)}</div></div>
-                                <div>
-                                    {town.buildings.map(it => <div className={'py-2 border-t-2 border-highlight border-solid'}>
-                                        <div className={'text-sm'}>{it.name} (lv. {it.level})</div>
-                                        <div className={'ps-5 text-xs text-pretty'}>{it.effect}</div>
+                        <div className={'flex flex-col justify-center items-center'}>
+                            <div className={'flex flex-col items-center'}>
+                                <div className={'flex flex-auto flex-row text-sm'}>{town.name}</div>
+                                <div className={'flex flex-row justify-between w-full text-xs'}><div className={'text-xs'}>prosperity:</div><div className={'text-right text-xs'}>{town.prosperity}</div></div>
+                                <div className={'flex flex-row justify-between w-full text-xs'}><div className={'text-xs'}>morale:</div><div className={'text-right text-xs'}>{town.morale}</div></div>
+                                <div className={'flex flex-row justify-between w-full text-xs'}><div className={'text-xs'}>defense:</div><div className={'text-right text-xs'}>{mapMoraleToDefense(town.morale) + town.buildings.filter(it => it.defenseBonus).map(it => it.defenseBonus).reduce((a: number,b: number) => a+b)}</div></div>
+                                <div className={'flex flex-row justify-between w-full text-xs'}><div className={'text-xs'}>soldiers:</div><div className={'text-right text-xs'}>{town.soldiers}</div></div>
+                                <div className={`pt-2`}>
+                                    {town.buildings.map(it => <div
+                                        onClick={async () => {
+                                            if (it.wrecked) {
+                                                await repair(it)
+                                            } else {
+                                                await upgrade(it)
+                                            }
+                                        }}
+                                        className={`py-1 border-t-2 flex flex-row border-highlight border-solid ${it.wrecked ? 'bg-red' : ''} justify-between`}>
+                                        <div className={'bg-inherit text-2xs flex-1 basis-20 text-nowrap text-left '}>{it.name} ({it.level})</div>
+                                        <div className={'bg-inherit text-2xs flex-1 basis-72 text-pretty text-left'}>{it.wrecked ? it.wreckedEffect : it.effect}</div>
+                                        <div className={'bg-inherit text-2xs flex-1 basis-1 text-nowrap text-left'}>{it.wrecked ? ['-', ...it.repair].map(n => ` ${n} `) : it.upgrade?.map(n => ` ${n} `)}</div>
                                     </div>)}
                                 </div>
                             </div>
                         </div>
                 }
-
-
             </div>
-
         }
-
-
     </div>
 }
 

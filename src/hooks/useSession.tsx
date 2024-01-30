@@ -68,7 +68,7 @@ export const useSession = (app: FirebaseApp | undefined, sessionId: string | und
     const resetSession = useCallback(() => {
         if (db && sessionId) {
             return updateDoc(doc(db, SESSION_COLLECTION, sessionId), {
-                round: 0,
+                round: 1,
                 fire: 0,
                 ice: 0,
                 earth: 0,

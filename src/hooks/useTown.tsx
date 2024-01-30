@@ -1,4 +1,4 @@
-import {useEffect, useMemo, useState} from "react";
+import {useCallback, useEffect, useMemo, useState} from "react";
 import {
     Building, Town
 } from "../model/model";
@@ -43,7 +43,7 @@ const townConverter = {
 export const useTown = (app: FirebaseApp | undefined, townId: string) => {
     const db = useMemo(() => app ? getFirestore(app) : undefined, [app])
 
-    const [town, setTown] = useState<Town>({prosperity: 0, name: '', id: '', morale: 0, buildings: []})
+    const [town, setTown] = useState<Town>({prosperity: 0, name: '', id: '', morale: 0, buildings: [], soldiers: 0})
 
     useEffect(() => {
         if (!db || !townId) {
@@ -64,7 +64,8 @@ export const useTown = (app: FirebaseApp | undefined, townId: string) => {
 
     }, [db, townId])
 
-    return {town}
+    const repair = useCallback((building: Building) => {}, [])
+    const upgrade = useCallback((building: Building) => {}, [])
 
-
+    return {town, repair, upgrade}
 }

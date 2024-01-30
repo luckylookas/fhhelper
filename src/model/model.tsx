@@ -82,15 +82,21 @@ export function hydrateSessionMonster(monster: Monster, sessionMonster: Firebase
 
 export interface Building {
     id: string
+    repair: number[]
+    upgrade: number[]
+    wreckedEffect: string
+    instantRepairCost: number
     name: string
     level: number
     defenseBonus: number
     effect: string
+    wrecked: boolean
 }
 
 export interface Town {
     id: string
     name: string
+    soldiers: number
     prosperity: number
     buildings: Building[]
     morale: number

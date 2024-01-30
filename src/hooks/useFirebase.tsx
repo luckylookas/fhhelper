@@ -7,6 +7,15 @@ import {FirebaseApp} from "@firebase/app";
 export const useFirebase = (email?: string, password?: string) => {
     const [firebaseApp, setApp] = useState<FirebaseApp>()
     const [error, setError] = useState<string>()
+    useEffect(() => {
+        const auth = getAuth(initializeApp(firebaseConfig))
+        auth.authStateReady().then(() => {
+            if (auth.currentUser) {
+                setApp(auth.app)
+                setError('')
+            }
+        })
+    }, [])
 
     useEffect(() => {
         if (!firebaseApp && password && email) {
@@ -21,6 +30,5 @@ export const useFirebase = (email?: string, password?: string) => {
                 })
         }
     }, [firebaseApp, email, password])
-
     return {firebaseApp, error}
 }

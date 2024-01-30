@@ -7,6 +7,7 @@ module.exports = {
     theme: {
         extend: {
             fontSize: {
+                'xs':  ['0.5rem', '0.7rem'],
                 '2xs': ['0.4rem', '0.5rem']
             },
             boxShadow: {
