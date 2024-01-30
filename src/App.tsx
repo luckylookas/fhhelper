@@ -85,9 +85,12 @@ function App() {
         if (chosenColor === undefined || chosenToken === undefined) {
             return Promise.resolve()
         }
-        if (!session.list[chosenColor].tokenHp[chosenToken - 1] || session.list[chosenColor].rank[chosenToken - 1] < rank) {
+        if ((!session.list[chosenColor].tokenHp[chosenToken - 1] || session.list[chosenColor].rank[chosenToken - 1] < rank) && amount > 0) {
             return session.createToken(session.list[chosenColor], rank, chosenToken)
         } else {
+            if (rank === ELITE && amount < 0) {
+                return session.setTokenHp(session.list[chosenColor], chosenToken, 0)
+            }
             return session.setTokenHp(session.list[chosenColor], chosenToken, session.list[chosenColor].tokenHp[chosenToken - 1] + amount)
         }
     }, [session, chosenToken, chosenColor])

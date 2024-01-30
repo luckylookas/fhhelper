@@ -205,6 +205,8 @@ export const useSession = (app: FirebaseApp | undefined, sessionId: string | und
 
        return setDoc(doc(db, session.monstersRef, monster.id).withConverter(sessionMonsterConverter), {
             ...monster,
+           rank: nextHp > 0 ? monster.rank : monster.rank.map((original, index) => index === token -1 ? NORMAL : original),
+           // rank: nextHp === 0 ? NORMAL : monster.rank,
             tokenHp: monster.tokenHp.map((original, index) => index === token-1 ? nextHp : original),
         } as SessionMonster)
     }, [db, session])
