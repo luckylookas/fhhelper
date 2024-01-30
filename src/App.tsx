@@ -234,12 +234,17 @@ function App() {
 
                                             <ol className={`${seethrough ? `border-t-8 border-2 border-solid border-${colors[monsterIndex % 4]}` : `bg-${colors[monsterIndex % 4]}`} ${chosenColor === monsterIndex && chosenToken === undefined ? 'shadow-glow shadow-highlight z-2' : 'z-1'}`}
                                             >
-                                                <li id={'stats'}
-                                                    className={`bg-transparent px-10 p-2 flex flex-row justify-between`}>
-                                                    <div className={`bg-transparent flex flex-row justify-center gap-5`}>
+                                                <li id={'stats'} className={`bg-transparent px-10 py-2 flex flex-row justify-between`}>
+
+
+
+
+
+
+                                                    <div className={`bg-transparent flex flex-row justify-center`}>
                                                         <div className={'relative bg-inherit'}>
                                                             <svg
-                                                                className={`opacity-30 right-1 ${seethrough ? 'fill-text' : 'fill-main'} bg-inherit min-h-6 max-h-6 min-w-6 max-w-6`}
+                                                                className={`opacity-60 fill-normalstat bg-inherit min-h-6 max-h-6 min-w-6 max-w-6 relative`}
                                                                 width="128"
                                                                 height="128"
                                                                 viewBox="0 0 128 128"
@@ -249,16 +254,15 @@ function App() {
                                                                     d="m 62.554041,95.071521 a 7.0272066,7.0272066 0 1 1 -9.93647,9.936469 L 42.6811,95.071521 22.80816,114.95149 a 7.0286304,7.0286304 0 0 1 -9.943497,9.93647 l -9.9364703,-9.93647 a 7.0286313,7.0286313 0 0 1 9.9364703,-9.9435 L 32.74463,85.135051 22.80816,75.198581 A 7.0272066,7.0272066 0 0 1 32.74463,65.26211 Z M 67.529303,90.103286 37.705838,60.286848 97.338714,0.661 122.18692,5.6292351 127.15515,30.477438 Z"
                                                                 />
                                                             </svg>
-                                                            <span
-                                                                className={'left-1 absolute top-0  bg-transparent text-text'}>{monster.monster.attack[2 * monster.level]}</span>
+                                                            <span className={'absolute top-0 bg-transparent text-text'}>{monster.monster.attack[2 * monster.level]}</span>
                                                         </div>
+
+
                                                         <div className={'relative bg-inherit'}>
                                                             <svg
-                                                                className={`opacity-30 ${monster.monster.speed[2 * monster.level + 1] !== monster.monster.speed[2 * monster.level] ? 'left-2' : 'left'} 
-                                                    ${seethrough ? 'fill-text' : 'fill-main'} bg-inherit min-h-6 max-h-6 min-w-6 max-w-6 relative`}
-
-                                                                height="128"
+                                                                className={`opacity-60 fill-normalstat bg-inherit min-h-6 max-h-6 min-w-6 max-w-6 relative`}
                                                                 width="128"
+                                                                height="128"
                                                                 viewBox="0 0 128 128"
                                                                 xmlns="http://www.w3.org/2000/svg"
                                                             >
@@ -270,15 +274,16 @@ function App() {
                                                                         d="m 373.266,245.244 c -21.795,-4.207 -40.727,-13.456 -56.888,-24.976 -1.406,1.403 -3.138,2.505 -5.192,3.081 l -64.48,17.956 c -6.336,1.769 -12.905,-1.937 -14.675,-8.273 -1.762,-6.344 1.949,-12.913 8.28,-14.683 l 55.31,-15.392 c -8.076,-7.756 -15.184,-15.844 -21.328,-23.716 l -58.737,15.084 c -6.369,1.636 -12.859,-2.204 -14.495,-8.565 -1.636,-6.378 2.204,-12.872 8.577,-14.508 l 49.988,-12.847 C 249.267,142.036 244.175,129.974 244.175,129.974 L 258.38224,-127.84912 11.073335,-128.57277 18.262,129.974 c 0,0 3.072,43.03 -13.832,112.198 -6.194,25.31 -5.158,50.82 -1.377,72.99 H 506.838 C 490.503,269.16 437.237,257.582 373.266,245.244 Z"/>
                                                                 </g>
                                                             </svg>
-                                                            <span
-                                                                className={'absolute top-0  bg-transparent text-text'}>{monster.monster.speed[2 * monster.level]}</span>
+                                                            <span className={'absolute top-0 bg-transparent text-text'}>{monster.monster.speed[2 * monster.level]}</span>
                                                         </div>
                                                     </div>
 
-                                                    <div className={`bg-transparent flex flex-row justify-center gap-5`}>
+
+
+                                                    <div className={`bg-transparent flex flex-row justify-center`}>
                                                         <div className={'relative bg-inherit'}>
                                                             <svg
-                                                                className={`right-1 opacity-60 fill-elitestat bg-inherit min-h-6 max-h-6 min-w-6 max-w-6 relative`}
+                                                                className={`opacity-60 fill-elitestat bg-inherit min-h-6 max-h-6 min-w-6 max-w-6 relative`}
                                                                 width="128"
                                                                 height="128"
                                                                 viewBox="0 0 128 128"
@@ -288,19 +293,16 @@ function App() {
                                                                     d="m 62.554041,95.071521 a 7.0272066,7.0272066 0 1 1 -9.93647,9.936469 L 42.6811,95.071521 22.80816,114.95149 a 7.0286304,7.0286304 0 0 1 -9.943497,9.93647 l -9.9364703,-9.93647 a 7.0286313,7.0286313 0 0 1 9.9364703,-9.9435 L 32.74463,85.135051 22.80816,75.198581 A 7.0272066,7.0272066 0 0 1 32.74463,65.26211 Z M 67.529303,90.103286 37.705838,60.286848 97.338714,0.661 122.18692,5.6292351 127.15515,30.477438 Z"
                                                                 />
                                                             </svg>
-                                                            <span
-                                                                className={'left-1 absolute top-0  bottom-0.5 bg-transparent text-text'}>{monster.monster.attack[2 * monster.level + 1]}</span>
+                                                            <span className={'absolute top-0 bg-transparent text-text'}>{monster.monster.attack[2 * monster.level + 1]}</span>
                                                         </div>
                                                         <div className={'relative bg-inherit'}>
                                                             <svg
-                                                                className={`opacity-60  fill-elitestat bg-inherit min-h-6 max-h-6 min-w-6 max-w-6`}
-
-                                                                height="128"
+                                                                className={`opacity-60 fill-elitestat bg-inherit min-h-6 max-h-6 min-w-6 max-w-6 relative`}
                                                                 width="128"
+                                                                height="128"
                                                                 viewBox="0 0 128 128"
                                                                 xmlns="http://www.w3.org/2000/svg"
                                                             >
-
                                                                 <g transform="matrix(0.24828173,0,0,0.24828173,0.54966229,32.824106)">
                                                                     <path
                                                                         d="M 511.529,337.45 H 7.928 c 7.129,26.637 16.478,44.576 16.478,44.576 h 147.537 v -24.6 l 50.715,24.6 h 285.854 c 3.276,-17.138 4.149,-31.83 3.017,-44.576 z"/>
@@ -308,10 +310,16 @@ function App() {
                                                                         d="m 373.266,245.244 c -21.795,-4.207 -40.727,-13.456 -56.888,-24.976 -1.406,1.403 -3.138,2.505 -5.192,3.081 l -64.48,17.956 c -6.336,1.769 -12.905,-1.937 -14.675,-8.273 -1.762,-6.344 1.949,-12.913 8.28,-14.683 l 55.31,-15.392 c -8.076,-7.756 -15.184,-15.844 -21.328,-23.716 l -58.737,15.084 c -6.369,1.636 -12.859,-2.204 -14.495,-8.565 -1.636,-6.378 2.204,-12.872 8.577,-14.508 l 49.988,-12.847 C 249.267,142.036 244.175,129.974 244.175,129.974 L 258.38224,-127.84912 11.073335,-128.57277 18.262,129.974 c 0,0 3.072,43.03 -13.832,112.198 -6.194,25.31 -5.158,50.82 -1.377,72.99 H 506.838 C 490.503,269.16 437.237,257.582 373.266,245.244 Z"/>
                                                                 </g>
                                                             </svg>
-                                                            <span
-                                                                className={'absolute top-0 bg-transparent text-text'}>{monster.monster.speed[2 * monster.level + 1]}</span>
+                                                            <span className={'absolute top-0 bg-transparent text-text'}>{monster.monster.speed[2 * monster.level + 1]}</span>
                                                         </div>
                                                     </div>
+
+
+
+
+
+
+
                                                 </li>
 
                                                 {monster.tokens.map((token, tokenIndex) =>
@@ -338,17 +346,17 @@ function App() {
                                                                     <div
                                                                         className='basis-full flex-row flex justify-center bg-inherit gap-2 relative pt-0.5'>
 
-                                                                        <div className={`z-1 
+                                                                        <div className={`z-20 
                                                     ${token.hp / token.maxHp > 0.75 ? 'bg-goodhealth' : (token.hp / token.maxHp > 0.25 && token.hp > 1 ? 'bg-medhealth' : 'bg-badhealth')} left-0 absolute h-full bottom-1`}
                                                                              style={{width: `${token.hp / token.maxHp * 100}%`}}
                                                                         ></div>
 
                                                                         <span
-                                                                            className='z-2 basis-1/2 bg-inherit text-right'>{token.hp}</span>
+                                                                            className='z-30 basis-1/2 bg-inherit text-right'>{token.hp}</span>
                                                                         <span
-                                                                            className='z-2 w-2 bg-inherit text-center'>/</span>
+                                                                            className='z-30 w-2 bg-inherit text-center'>/</span>
                                                                         <span
-                                                                            className='z-2 basis-1/2 bg-inherit text-left'>{token.maxHp}</span>
+                                                                            className='z-30 basis-1/2 bg-inherit text-left'>{token.maxHp}</span>
 
 
                                                                     </div>
