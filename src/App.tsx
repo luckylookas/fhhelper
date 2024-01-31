@@ -4,7 +4,7 @@ import {Search} from "./components/search";
 import {useSearch} from "./hooks/useSearch";
 import {useFirebase} from "./hooks/useFirebase";
 import {useSession} from "./hooks/useSession";
-import {ELITE, NORMAL, Rank} from "./model/model";
+import {Building, ELITE, NORMAL, Rank} from "./model/model";
 import {Handler, useKeyboard} from "./hooks/useKeyboard";
 import {Button} from "./components/button";
 import {Login} from "./components/login";
@@ -59,7 +59,7 @@ function App() {
 
     const [keyBoardActive, setKeyBoardActive] = useState(true)
 
-    const [phase, setPhase] = useState<'scenario' | 'town'>('scenario')
+    const [phase, setPhase] = useState<'scenario' | 'town'>('town')
 
     const [theme, setTheme] = useState(0)
     const [seethrough, setseethrough] = useState(false);
@@ -179,6 +179,9 @@ function App() {
     ], [colorHandlers, numberHandlers, addHandler, controlHandlers])
     useKeyboard(handlers, keyBoardActive)
 
+
+    const [hoveringBuilding, setHoveringBuilding] = useState<Building|undefined>(undefined)
+
     return <div data-theme={themes[theme]} className='w-screen h-screen z-0'>
         {switchSession && <SwitchSession currentSession={sessionId} currentLevel={session.level}
                                          trigger={async (sessionId, level) => {
@@ -209,7 +212,7 @@ function App() {
                         phase === 'scenario' ?
                             <>
                                 <Button onClick={async () => await session.resetSession()} label={'reset'}/>
-                                <Button onClick={() => setPhase('town')} label={`end scenario`}/>
+                                <Button onClick={() => setPhase('town')} label={`end scenario '${sessionId}'`}/>
                             </>
                             :
                             <>
@@ -407,15 +410,23 @@ function App() {
                             </div>
                         </>
                         :
-                        <div className={'flex flex-col justify-center items-center'}>
-                            <div className={'flex flex-col items-center'}>
+                        <div className={'flex flex-col justify-center items-center min-w-full px-5'}>
+                            <div className={'flex flex-col items-center min-w-full'}>
                                 <div className={'flex flex-auto flex-row text-sm'}>{town.name}</div>
+                                <div className={'flex flex-auto flex-row text-2xs'}>resources as ([propserity]) (wood) (ore) (skin)</div>
                                 <div className={'flex flex-row justify-between w-full text-xs'}><div className={'text-xs'}>prosperity:</div><div className={'text-right text-xs'}>{town.prosperity}</div></div>
                                 <div className={'flex flex-row justify-between w-full text-xs'}><div className={'text-xs'}>morale:</div><div className={'text-right text-xs'}>{town.morale}</div></div>
-                                <div className={'flex flex-row justify-between w-full text-xs'}><div className={'text-xs'}>defense:</div><div className={'text-right text-xs'}>{mapMoraleToDefense(town.morale) + town.buildings.filter(it => it.defenseBonus).map(it => it.defenseBonus).reduce((a: number,b: number) => a+b)}</div></div>
+                                <div className={'flex flex-row justify-between w-full text-xs'}><div className={'text-xs'}>defense:</div><div className={'text-right text-xs'}>{mapMoraleToDefense(town.morale) + town.buildings?.filter(it => it.defenseBonus).map(it => it.defenseBonus).reduce((a: number,b: number) => a+b, 0)}</div></div>
                                 <div className={'flex flex-row justify-between w-full text-xs'}><div className={'text-xs'}>soldiers:</div><div className={'text-right text-xs'}>{town.soldiers}</div></div>
-                                <div className={`pt-2`}>
-                                    {town.buildings.map(it => <div
+                                <div className={`pt-2 min-w-full`}>
+                                    {town.buildings?.map(it => <div
+                                        key={it.id}
+                                        onMouseEnter={() => {
+                                            setHoveringBuilding(it)
+                                        }}
+                                        onMouseLeave={() => {
+                                            setHoveringBuilding(undefined)
+                                        }}
                                         onClick={async () => {
                                             if (it.wrecked) {
                                                 await repair(it)
@@ -423,10 +434,34 @@ function App() {
                                                 await upgrade(it)
                                             }
                                         }}
-                                        className={`py-1 border-t-2 flex flex-row border-highlight border-solid ${it.wrecked ? 'bg-red' : ''} justify-between`}>
-                                        <div className={'bg-inherit text-2xs flex-1 basis-20 text-nowrap text-left '}>{it.name} ({it.level})</div>
-                                        <div className={'bg-inherit text-2xs flex-1 basis-72 text-pretty text-left'}>{it.wrecked ? it.wreckedEffect : it.effect}</div>
-                                        <div className={'bg-inherit text-2xs flex-1 basis-1 text-nowrap text-left'}>{it.wrecked ? ['-', ...it.repair].map(n => ` ${n} `) : it.upgrade?.map(n => ` ${n} `)}</div>
+                                        className={`min-w-full ${it.wrecked ? 'hover:bg-elementearth hover:text-ctext' : 'hover:bg-elementfire hover:text-ctext'} py-1 border-t-2 gap-1 flex flex-row border-highlight border-solid ${it.wrecked ? 'bg-elementfire text-ctext' : ''} justify-between`}>
+
+                                        <div className={'text-inherit bg-transparent text-2xs flex-auto basis-20 text-nowrap text-left font-bold'}>{it.name} ({it.level})</div>
+                                        <div className={'text-inherit bg-transparent text-2xs flex-auto basis-72 text-pretty text-left'}>{(it.wrecked && hoveringBuilding !== it)|| (!it.wrecked && hoveringBuilding === it) ? it.wreckedEffect : it.effect}</div>
+                                        <div className={`text-inherit bg-transparent text-2xs flex-auto basis-10 text-nowrap text-left`}>
+                                            {
+                                                it.wrecked && ['repair for ', ...it.repair].map(n =>
+                                                    <span className={`text-inherit bg-transparent pe-1 text-2xs`}>{n}</span>)
+                                            }
+
+                                            {!it.wrecked && it === hoveringBuilding && <span className={`text-inherit flex bg-transparent text-2xs text-left`}>
+                                                <span className={`text-inherit bg-transparent pe-1 text-2xs text-left`}>save for {it.instantRepairCost}</span>
+                                            </span>
+                                            }
+
+                                            {!it.wrecked && it.upgrade && it !== hoveringBuilding &&
+                                                <span className={`text-inherit flex bg-transparent text-2xs text-left`}>
+                                                        <span className={`${!it.wrecked && it.upgrade && it.upgrade[0] > town.prosperity ? 'text-elementfire' : 'text-inherit'}  bg-transparent pe-1 text-2xs text-left`}>[{it.upgrade[0]}]</span>
+                                                    {it.upgrade.slice(1).map(n => <span
+                                                        className={`${!it.wrecked && it.upgrade && it.upgrade[0] > town.prosperity ? 'opacity-30' : ''} text-inherit bg-transparent pe-1 text-2xs text-left`}>{n}</span>)}
+                                                    </span>
+                                            }
+
+                                            {!it.wrecked && !it.upgrade && it !== hoveringBuilding &&
+                                                <span className={'text-inherit bg-transparent pe-1 text-2xs'}></span>
+                                            }
+
+                                        </div>
                                     </div>)}
                                 </div>
                             </div>
