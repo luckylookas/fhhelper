@@ -9,7 +9,7 @@ import {
     DocumentData,
     onSnapshot,
     getFirestore,
-    SnapshotOptions,
+    SnapshotOptions, updateDoc,
 } from 'firebase/firestore';
 
 const TOWN_COLLECTION = `towns`;
@@ -22,6 +22,7 @@ const buildingConverter = {
     fromFirestore: (snapshot: DocumentData, options: SnapshotOptions): Building => {
         const data = snapshot.data(options)!;
         return {
+            id: snapshot.id,
             ...data
         } as Building;
     }
@@ -34,6 +35,7 @@ const townConverter = {
     fromFirestore: (snapshot: DocumentData, options: SnapshotOptions): Town => {
         const data = snapshot.data(options)!;
         return {
+            id: snapshot.id,
             ...data
         } as Town;
     }
@@ -64,8 +66,19 @@ export const useTown = (app: FirebaseApp | undefined, townId: string) => {
 
     }, [db, townId])
 
-    const repair = useCallback((building: Building) => {}, [])
-    const upgrade = useCallback((building: Building) => {}, [])
+    const repair = useCallback((building: Building) => {
+        if (!db || !townId) {
+            return
+        }
+        return updateDoc(doc(db, TOWN_COLLECTION, townId, BUILDING_COLLECTION, building.id).withConverter(buildingConverter), {wrecked: false})
+    }, [db, townId])
 
-    return {town, repair, upgrade}
+    const wreck = useCallback((building: Building) => {
+        if (!db || !townId) {
+            return
+        }
+        return updateDoc(doc(db, TOWN_COLLECTION, townId, BUILDING_COLLECTION, building.id).withConverter(buildingConverter), {wrecked: true})
+    }, [db, townId])
+
+    return {town, repair , wreck}
 }

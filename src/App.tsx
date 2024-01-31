@@ -17,12 +17,12 @@ const colors = ['red', 'green', 'blue', 'purple']
 const themes = ['light', 'dark']
 
 function mapMoraleToDefense(morale: number): number {
-   if (morale < 3) {
-       return -10
-   }
-   if (morale < 5) {
-       return -5
-   }
+    if (morale < 3) {
+        return -10
+    }
+    if (morale < 5) {
+        return -5
+    }
     if (morale < 8) {
         return 0
     }
@@ -38,7 +38,7 @@ function mapMoraleToDefense(morale: number): number {
 function App() {
     const townName = useMemo(() => {
         return new URLSearchParams(window.location.search).get("town") ?? "lastChristmateers"
-    }, [] )
+    }, [])
 
 
     const [switchSession, setSwitchSession] = useState(false)
@@ -51,7 +51,7 @@ function App() {
     const {firebaseApp, error} = useFirebase(email, password);
     const session = useSession(firebaseApp, sessionId);
     const search = useSearch(firebaseApp, session.list);
-    const {town, repair, upgrade} = useTown(firebaseApp, townName)
+    const {town, repair, wreck} = useTown(firebaseApp, townName)
 
 
     const [chosenColor, setChosenColor] = useState<number>()
@@ -180,7 +180,7 @@ function App() {
     useKeyboard(handlers, keyBoardActive)
 
 
-    const [hoveringBuilding, setHoveringBuilding] = useState<Building|undefined>(undefined)
+    const [hoveringBuilding, setHoveringBuilding] = useState<Building | undefined>(undefined)
 
     return <div data-theme={themes[theme]} className='w-screen h-screen z-0'>
         {switchSession && <SwitchSession currentSession={sessionId} currentLevel={session.level}
@@ -189,8 +189,8 @@ function App() {
                                              await session.setLevel(level)
                                              setPhase('scenario')
                                          }} close={() => {
-                                             setKeyBoardActive(true)
-                                             setSwitchSession(false)
+            setKeyBoardActive(true)
+            setSwitchSession(false)
         }}/>}
         {!firebaseApp ?
             <Login error={error} toggleKeyBoardControls={setKeyBoardActive} triggerLogin={(email, password) => {
@@ -240,11 +240,8 @@ function App() {
 
                                             <ol className={`${seethrough ? `border-t-8 border-2 border-solid border-${colors[monsterIndex % 4]}` : `bg-${colors[monsterIndex % 4]}`} ${chosenColor === monsterIndex && chosenToken === undefined ? 'shadow-glow shadow-highlight z-2' : 'z-1'}`}
                                             >
-                                                <li id={'stats'} className={`bg-transparent px-10 py-2 flex flex-row justify-between`}>
-
-
-
-
+                                                <li id={'stats'}
+                                                    className={`bg-transparent px-10 py-2 flex flex-row justify-between`}>
 
 
                                                     <div className={`bg-transparent flex flex-row justify-center`}>
@@ -260,7 +257,8 @@ function App() {
                                                                     d="m 62.554041,95.071521 a 7.0272066,7.0272066 0 1 1 -9.93647,9.936469 L 42.6811,95.071521 22.80816,114.95149 a 7.0286304,7.0286304 0 0 1 -9.943497,9.93647 l -9.9364703,-9.93647 a 7.0286313,7.0286313 0 0 1 9.9364703,-9.9435 L 32.74463,85.135051 22.80816,75.198581 A 7.0272066,7.0272066 0 0 1 32.74463,65.26211 Z M 67.529303,90.103286 37.705838,60.286848 97.338714,0.661 122.18692,5.6292351 127.15515,30.477438 Z"
                                                                 />
                                                             </svg>
-                                                            <span className={'absolute top-0 bg-transparent text-text'}>{monster.monster.attack[2 * monster.level]}</span>
+                                                            <span
+                                                                className={'absolute top-0 bg-transparent text-text'}>{monster.monster.attack[2 * monster.level]}</span>
                                                         </div>
 
 
@@ -280,10 +278,10 @@ function App() {
                                                                         d="m 373.266,245.244 c -21.795,-4.207 -40.727,-13.456 -56.888,-24.976 -1.406,1.403 -3.138,2.505 -5.192,3.081 l -64.48,17.956 c -6.336,1.769 -12.905,-1.937 -14.675,-8.273 -1.762,-6.344 1.949,-12.913 8.28,-14.683 l 55.31,-15.392 c -8.076,-7.756 -15.184,-15.844 -21.328,-23.716 l -58.737,15.084 c -6.369,1.636 -12.859,-2.204 -14.495,-8.565 -1.636,-6.378 2.204,-12.872 8.577,-14.508 l 49.988,-12.847 C 249.267,142.036 244.175,129.974 244.175,129.974 L 258.38224,-127.84912 11.073335,-128.57277 18.262,129.974 c 0,0 3.072,43.03 -13.832,112.198 -6.194,25.31 -5.158,50.82 -1.377,72.99 H 506.838 C 490.503,269.16 437.237,257.582 373.266,245.244 Z"/>
                                                                 </g>
                                                             </svg>
-                                                            <span className={'absolute top-0 bg-transparent text-text'}>{monster.monster.speed[2 * monster.level]}</span>
+                                                            <span
+                                                                className={'absolute top-0 bg-transparent text-text'}>{monster.monster.speed[2 * monster.level]}</span>
                                                         </div>
                                                     </div>
-
 
 
                                                     <div className={`bg-transparent flex flex-row justify-center`}>
@@ -299,7 +297,8 @@ function App() {
                                                                     d="m 62.554041,95.071521 a 7.0272066,7.0272066 0 1 1 -9.93647,9.936469 L 42.6811,95.071521 22.80816,114.95149 a 7.0286304,7.0286304 0 0 1 -9.943497,9.93647 l -9.9364703,-9.93647 a 7.0286313,7.0286313 0 0 1 9.9364703,-9.9435 L 32.74463,85.135051 22.80816,75.198581 A 7.0272066,7.0272066 0 0 1 32.74463,65.26211 Z M 67.529303,90.103286 37.705838,60.286848 97.338714,0.661 122.18692,5.6292351 127.15515,30.477438 Z"
                                                                 />
                                                             </svg>
-                                                            <span className={'absolute top-0 bg-transparent text-text'}>{monster.monster.attack[2 * monster.level + 1]}</span>
+                                                            <span
+                                                                className={'absolute top-0 bg-transparent text-text'}>{monster.monster.attack[2 * monster.level + 1]}</span>
                                                         </div>
                                                         <div className={'relative bg-inherit'}>
                                                             <svg
@@ -316,14 +315,10 @@ function App() {
                                                                         d="m 373.266,245.244 c -21.795,-4.207 -40.727,-13.456 -56.888,-24.976 -1.406,1.403 -3.138,2.505 -5.192,3.081 l -64.48,17.956 c -6.336,1.769 -12.905,-1.937 -14.675,-8.273 -1.762,-6.344 1.949,-12.913 8.28,-14.683 l 55.31,-15.392 c -8.076,-7.756 -15.184,-15.844 -21.328,-23.716 l -58.737,15.084 c -6.369,1.636 -12.859,-2.204 -14.495,-8.565 -1.636,-6.378 2.204,-12.872 8.577,-14.508 l 49.988,-12.847 C 249.267,142.036 244.175,129.974 244.175,129.974 L 258.38224,-127.84912 11.073335,-128.57277 18.262,129.974 c 0,0 3.072,43.03 -13.832,112.198 -6.194,25.31 -5.158,50.82 -1.377,72.99 H 506.838 C 490.503,269.16 437.237,257.582 373.266,245.244 Z"/>
                                                                 </g>
                                                             </svg>
-                                                            <span className={'absolute top-0 bg-transparent text-text'}>{monster.monster.speed[2 * monster.level + 1]}</span>
+                                                            <span
+                                                                className={'absolute top-0 bg-transparent text-text'}>{monster.monster.speed[2 * monster.level + 1]}</span>
                                                         </div>
                                                     </div>
-
-
-
-
-
 
 
                                                 </li>
@@ -413,54 +408,66 @@ function App() {
                         <div className={'flex flex-col justify-center items-center min-w-full px-5'}>
                             <div className={'flex flex-col items-center min-w-full'}>
                                 <div className={'flex flex-auto flex-row text-sm'}>{town.name}</div>
-                                <div className={'flex flex-auto flex-row text-2xs'}>resources as ([propserity]) (wood) (ore) (skin)</div>
-                                <div className={'flex flex-row justify-between w-full text-xs'}><div className={'text-xs'}>prosperity:</div><div className={'text-right text-xs'}>{town.prosperity}</div></div>
-                                <div className={'flex flex-row justify-between w-full text-xs'}><div className={'text-xs'}>morale:</div><div className={'text-right text-xs'}>{town.morale}</div></div>
-                                <div className={'flex flex-row justify-between w-full text-xs'}><div className={'text-xs'}>defense:</div><div className={'text-right text-xs'}>{mapMoraleToDefense(town.morale) + town.buildings?.filter(it => it.defenseBonus).map(it => it.defenseBonus).reduce((a: number,b: number) => a+b, 0)}</div></div>
-                                <div className={'flex flex-row justify-between w-full text-xs'}><div className={'text-xs'}>soldiers:</div><div className={'text-right text-xs'}>{town.soldiers}</div></div>
+                                <div className={'flex flex-auto flex-row text-2xs'}>resources as ([propserity]) (wood)
+                                    (ore) (skin)
+                                </div>
+                                <div className={'flex flex-row justify-between w-full text-xs'}>
+                                    <div className={'text-xs'}>prosperity:</div>
+                                    <div className={'text-right text-xs'}>{town.prosperity}</div>
+                                </div>
+                                <div className={'flex flex-row justify-between w-full text-xs'}>
+                                    <div className={'text-xs'}>morale:</div>
+                                    <div className={'text-right text-xs'}>{town.morale}</div>
+                                </div>
+                                <div className={'flex flex-row justify-between w-full text-xs'}>
+                                    <div className={'text-xs'}>defense:</div>
+                                    <div
+                                        className={'text-right text-xs'}>{mapMoraleToDefense(town.morale) + town.buildings?.filter(it => it.defenseBonus).map(it => it.defenseBonus).reduce((a: number, b: number) => a + b, 0)}</div>
+                                </div>
+                                <div className={'flex flex-row justify-between w-full text-xs'}>
+                                    <div className={'text-xs'}>soldiers:</div>
+                                    <div className={'text-right text-xs'}>{town.soldiers}</div>
+                                </div>
                                 <div className={`pt-2 min-w-full`}>
                                     {town.buildings?.map(it => <div
                                         key={it.id}
-                                        onMouseEnter={() => {
-                                            setHoveringBuilding(it)
-                                        }}
-                                        onMouseLeave={() => {
-                                            setHoveringBuilding(undefined)
-                                        }}
+                                        onMouseEnter={() => setHoveringBuilding(it)}
+                                        onMouseLeave={() => setHoveringBuilding(undefined)}
                                         onClick={async () => {
                                             if (it.wrecked) {
                                                 await repair(it)
                                             } else {
-                                                await upgrade(it)
+                                                await wreck(it)
                                             }
                                         }}
-                                        className={`min-w-full ${it.wrecked ? 'hover:bg-elementearth hover:text-ctext' : 'hover:bg-elementfire hover:text-ctext'} py-1 border-t-2 gap-1 flex flex-row border-highlight border-solid ${it.wrecked ? 'bg-elementfire text-ctext' : ''} justify-between`}>
-
-                                        <div className={'text-inherit bg-transparent text-2xs flex-auto basis-20 text-nowrap text-left font-bold'}>{it.name} ({it.level})</div>
-                                        <div className={'text-inherit bg-transparent text-2xs flex-auto basis-72 text-pretty text-left'}>{(it.wrecked && hoveringBuilding !== it)|| (!it.wrecked && hoveringBuilding === it) ? it.wreckedEffect : it.effect}</div>
-                                        <div className={`text-inherit bg-transparent text-2xs flex-auto basis-10 text-nowrap text-left`}>
-                                            {
-                                                it.wrecked && ['repair for ', ...it.repair].map(n =>
-                                                    <span className={`text-inherit bg-transparent pe-1 text-2xs`}>{n}</span>)
+                                        className={`cursor-pointer min-h-6 max-h-6 min-w-full ${it.wrecked ? 'hover:bg-elementearth hover:text-ctext' : 'hover:bg-elementfire hover:text-ctext'} py-1 border-t-2 gap-1 flex flex-row border-highlight border-solid ${it.wrecked ? 'bg-elementfire text-ctext' : ''} justify-between`}>
+                                        <div
+                                            className={'text-inherit bg-transparent text-2xs flex-auto basis-20 text-nowrap text-left font-bold'}>{it.name} ({it.level})
+                                        </div>
+                                        <div
+                                            className={'text-inherit bg-transparent text-2xs flex-auto basis-72 text-pretty text-left'}>{(it.wrecked && hoveringBuilding !== it) || (!it.wrecked && hoveringBuilding === it) ? (it.wreckedEffect ?? 'no effect') : it.effect}</div>
+                                        <div
+                                            className={`text-inherit bg-transparent text-2xs flex-auto basis-10 text-nowrap text-left`}>
+                                            {it.wrecked && ['repair for ', ...it.repair].map(n =>
+                                                <span
+                                                    className={`text-inherit bg-transparent pe-1 text-2xs`}>{n}</span>)
                                             }
-
-                                            {!it.wrecked && it === hoveringBuilding && <span className={`text-inherit flex bg-transparent text-2xs text-left`}>
+                                            {!it.wrecked && it === hoveringBuilding &&
+                                                <span className={`text-inherit flex bg-transparent text-2xs text-left`}>
                                                 <span className={`text-inherit bg-transparent pe-1 text-2xs text-left`}>save for {it.instantRepairCost}</span>
                                             </span>
                                             }
-
                                             {!it.wrecked && it.upgrade && it !== hoveringBuilding &&
                                                 <span className={`text-inherit flex bg-transparent text-2xs text-left`}>
-                                                        <span className={`${!it.wrecked && it.upgrade && it.upgrade[0] > town.prosperity ? 'text-elementfire' : 'text-inherit'}  bg-transparent pe-1 text-2xs text-left`}>[{it.upgrade[0]}]</span>
+                                                        <span
+                                                            className={`${!it.wrecked && it.upgrade && it.upgrade[0] > town.prosperity ? 'text-elementfire' : 'text-inherit'}  bg-transparent pe-1 text-2xs text-left`}>[{it.upgrade[0]}]</span>
                                                     {it.upgrade.slice(1).map(n => <span
                                                         className={`${!it.wrecked && it.upgrade && it.upgrade[0] > town.prosperity ? 'opacity-30' : ''} text-inherit bg-transparent pe-1 text-2xs text-left`}>{n}</span>)}
                                                     </span>
                                             }
-
                                             {!it.wrecked && !it.upgrade && it !== hoveringBuilding &&
                                                 <span className={'text-inherit bg-transparent pe-1 text-2xs'}></span>
                                             }
-
                                         </div>
                                     </div>)}
                                 </div>
