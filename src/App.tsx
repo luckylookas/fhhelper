@@ -146,6 +146,7 @@ function App() {
             action: [() => new Promise(() => session.resetSession()), () => new Promise(() => {
                 setPhase(prev => {
                     setSwitchSession(prev === 'town')
+                    setKeyBoardActive(prev !== 'town')
                     return prev === 'town' ? 'scenario' : 'town'
                 })
             })]
@@ -212,7 +213,9 @@ function App() {
                         phase === 'scenario' ?
                             <>
                                 <Button onClick={async () => await session.resetSession()} label={'reset'}/>
-                                <Button onClick={() => setPhase('town')} label={`end scenario '${sessionId}'`}/>
+                                <Button onClick={() =>
+                                    setPhase('town')
+                                } label={`end scenario '${sessionId}'`}/>
                             </>
                             :
                             <>
