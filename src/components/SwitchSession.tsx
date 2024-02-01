@@ -54,14 +54,6 @@ export const SwitchSession = ({close, currentSession, currentLevel, trigger}: Pr
         },
     ], true)
 
-    // enter number -> scenario
-    //
-    // n -> choose level phase
-    //alt-n back
-    // enter number -> level
-    // n -> finish
-    // r cancel
-
     return <div className={`absolute w-screen h-screen bg-transparent flex justify-center items-center z-20`}>
         <div className={`absolute w-full h-full bg-dark opacity-90  flex justify-center items-center z-20`}>
         </div>

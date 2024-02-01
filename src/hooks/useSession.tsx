@@ -75,6 +75,7 @@ export const useSession = (app: FirebaseApp | undefined, sessionId: string | und
                 wind: 0,
                 dark: 0,
                 light: 0,
+                monstersRef: `${SESSION_COLLECTION}/${sessionId}/monsters`
             })
                 .then(() =>
                     getDocs(
@@ -109,8 +110,10 @@ export const useSession = (app: FirebaseApp | undefined, sessionId: string | und
         }
         setSession(_session)
     }, [db])
+
     const refreshMonsters = useCallback(async (monsters?: FirebaseSessionMonster[]) => {
         if (!db || !monsters?.length || !session) {
+            setList([])
             return
         }
 
@@ -147,6 +150,9 @@ export const useSession = (app: FirebaseApp | undefined, sessionId: string | und
         if (!session || !db || !sessionId) {
             return Promise.reject('not ready')
         }
+
+
+
         return setDoc(doc(db, SESSION_COLLECTION, sessionId).withConverter(sessionConverter), {...session,
             round: Math.max(0, session.round-1)
         })
@@ -171,7 +177,6 @@ export const useSession = (app: FirebaseApp | undefined, sessionId: string | und
         if (!session || !db) {
             return Promise.reject('not ready')
         }
-        debugger;
         return setDoc(doc(db, session.monstersRef, monster.id).withConverter(sessionMonsterConverter), {
             ...monster,
             rank: monster.rank.map((original, index) => index === token-1 ? rank : original),
