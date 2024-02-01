@@ -61,7 +61,7 @@ export const SwitchSession = ({close, currentSession, currentLevel, trigger}: Pr
             {phase === SCENARIO &&
                 <div className={`flex basis-full flex-col justify-center content-center gap-2`}>
                     <label className={'text-xs'}>scenario</label>
-                    <input autoFocus={phase === SCENARIO} ref={scenarioRef} type={"number"}
+                    <input autoFocus={phase === SCENARIO} ref={scenarioRef}
                            className='basis-1/8 text-xs border-text border-solid border-b-2 rounded-none'
                            placeholder='scenario' value={sessionId} onChange={(e) => {
                         setSessionId(e.target.value)
@@ -72,7 +72,7 @@ export const SwitchSession = ({close, currentSession, currentLevel, trigger}: Pr
                 <div className={`flex basis-full flex-col justify-center content-center gap-2`}>
                     <label className={'text-xs'}>Scenario {sessionId}</label>
                     <label className={'text-xs'}>level</label>
-                    <input className={`max-h-0`} autoFocus={phase === LEVEL} type={"number"} onKeyUp={(e) => {
+                    <input className={`max-h-0`} autoFocus={phase === LEVEL} onKeyUp={(e) => {
                         setLevel(parseInt(e.key, 10)%8 as Level)
                     }}/>
                     <div className={`bg-inherit flex-row flex justify-between`}>
