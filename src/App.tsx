@@ -216,7 +216,10 @@ function App() {
                             </>
                             :
                             <>
-                                <Button onClick={() => setSwitchSession(prev => !prev)} label={`start session`}/>
+                                <Button onClick={() => {
+                                    setKeyBoardActive(false)
+                                    setSwitchSession(prev => !prev)
+                                }} label={`start session`}/>
                             </>
                     }
                 </div>
