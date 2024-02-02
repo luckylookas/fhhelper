@@ -1,16 +1,13 @@
 import React, {useState} from "react";
+import {useFirebase} from "../hooks/useFirebase";
 
-interface Props {
-    toggleKeyBoardControls: (active: boolean) => void
-    triggerLogin: (email: string, password: string) => void
-    error?: string
-}
-
-export const Login = ({error, toggleKeyBoardControls, triggerLogin}: Props) => {
-
+export const Login = () => {
     const [email, setEmail] = useState<string>('')
     const [password, setPassword] = useState<string>('')
+    const [bemail, setbEmail] = useState<string>('')
+    const [bpassword, setbPassword] = useState<string>('')
 
+    const {error} = useFirebase(email, password);
 
     return <div id='loader' className='w-screen h-screen'>
         <div
@@ -18,19 +15,15 @@ export const Login = ({error, toggleKeyBoardControls, triggerLogin}: Props) => {
         <div className='w-screen gap-2 h-screen flex flex-col p-2 z-10 justify-center items-center'>
             <input className='basis-1/8 text-xs border-text border-solid border-b-2 rounded-none'
                    placeholder='email'
-                   onInput={() => toggleKeyBoardControls(false)}
-                   onBlur={() => toggleKeyBoardControls(true)}
-                   onChange={e => setEmail(e.target.value)}/>
+                   onChange={e => setbEmail(e.target.value)}/>
             <input type={'password'}
-                   onInput={() => toggleKeyBoardControls(false)}
-                   onBlur={() => toggleKeyBoardControls(true)}
                    className='basis-1/8 text-xs border-text border-solid border-b-2 rounded-none'
-                   placeholder='password' onChange={e => setPassword(e.target.value)}/>
+                   placeholder='password' onChange={e => setbPassword(e.target.value)}/>
             <div
                 className={`mx-80 basis-1/8 text-xs bg-light hover:bg-dark hover:text-ctext p-2 text-center px-5 cursor-pointer`}
                 onClick={() => {
-                    toggleKeyBoardControls(true)
-                    triggerLogin(email, password)
+                    setPassword(bpassword)
+                    setEmail(bemail)
                 }}>login
             </div>
             <div

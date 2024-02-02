@@ -5,18 +5,15 @@ import {useKeyboard} from "../hooks/useKeyboard";
 
 interface Props {
     close: () => void
-    currentLevel?: Level
-    currentSession: string
-    trigger: (sessionId: string, level: Level) => void
 }
 
 const SCENARIO = 1
 const LEVEL = 2
 const DONE = 0
 
-export const SwitchSession = ({close, currentSession, currentLevel, trigger}: Props) => {
+export const SwitchSession = ({close}: Props) => {
     const [sessionId, setSessionId] = useState<string>()
-    const [level, setLevel] = useState<Level>(currentLevel ? currentLevel : 0 as Level)
+    const [level, setLevel] = useState<Level>(0)
 
     const [phase, setPhase] = useState(SCENARIO)
 
@@ -25,11 +22,12 @@ export const SwitchSession = ({close, currentSession, currentLevel, trigger}: Pr
     useEffect(() => {
         if (phase === DONE) {
             if (sessionId) {
-                trigger(sessionId, level ?? 0);
+                localStorage.setItem("sessionId", sessionId)
+                //todo set level on the session in firebase
             }
             close()
         }
-    }, [phase, close, sessionId, level, trigger])
+    }, [phase, close, sessionId, level])
 
     useKeyboard([
         {
@@ -38,18 +36,6 @@ export const SwitchSession = ({close, currentSession, currentLevel, trigger}: Pr
                 setPhase(prev => (prev + 1) % 3)
             }), () => new Promise(() => {
                 setPhase(prev => prev - 1)
-            })]
-        },
-        {
-            keys: ['k'],
-            action: [() => new Promise(() => {
-                setLevel(currentLevel ?? 0)
-                setSessionId(currentSession)
-                setPhase(DONE)
-            }), () => new Promise(() => {
-                setLevel(currentLevel ?? 0)
-                setSessionId(currentSession)
-                setPhase(DONE)
             })]
         },
     ], true)
