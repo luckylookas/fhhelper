@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/fhhelper/static/css/main.b45f8965.css",
-    "main.js": "/fhhelper/static/js/main.f3a04b0a.js",
+    "main.js": "/fhhelper/static/js/main.ca7f6595.js",
     "index.html": "/fhhelper/index.html",
     "main.b45f8965.css.map": "/fhhelper/static/css/main.b45f8965.css.map",
-    "main.f3a04b0a.js.map": "/fhhelper/static/js/main.f3a04b0a.js.map"
+    "main.ca7f6595.js.map": "/fhhelper/static/js/main.ca7f6595.js.map"
   },
   "entrypoints": [
     "static/css/main.b45f8965.css",
-    "static/js/main.f3a04b0a.js"
+    "static/js/main.ca7f6595.js"
   ]
 }
