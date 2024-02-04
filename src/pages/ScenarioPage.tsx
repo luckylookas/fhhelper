@@ -51,6 +51,7 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
             }
             return session.setTokenHp(session.list[chosenColor], chosenToken, session.list[chosenColor].tokenHp[chosenToken - 1] + amount)
         }
+
     }, [session, chosenToken, chosenColor])
     const numberHandlers = useMemo(() => Array(10).fill(0).map((_, number) => (
         {
@@ -87,10 +88,10 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
                     return colors.indexOf(color)
                 })),
                 () => new Promise(() => setChosenColor(prev => {
-                    if (prev !== colors.indexOf(color)) {
+                    if (prev !== colors.lastIndexOf(color)) {
                         setChosenToken(undefined)
                     }
-                    return colors.indexOf(color)
+                    return colors.lastIndexOf(color)
                 }))]
         } as Handler
     )), [])
@@ -247,10 +248,10 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
                                                 <div
                                                     className='basis-full flex-row flex justify-center bg-inherit gap-2 relative pt-0.5'>
 
-                                                    <div className={`z-20 
+                                                    <div className={`z-10 
                                                     ${token.hp / token.maxHp > 0.75 ? 'bg-goodhealth' : (token.hp / token.maxHp > 0.25 && token.hp > 1 ? 'bg-medhealth' : 'bg-badhealth')} left-0 absolute h-full bottom-1`}
                                                          style={{width: `${token.hp / token.maxHp * 100}%`}}
-                                                    ></div>
+                                                    />
 
                                                     <span
                                                         className='z-30 basis-1/2 bg-inherit text-right'>{token.hp}</span>
@@ -258,7 +259,6 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
                                                         className='z-30 w-2 bg-inherit text-center'>/</span>
                                                     <span
                                                         className='z-30 basis-1/2 bg-inherit text-left'>{token.maxHp}</span>
-
 
                                                 </div>
 
