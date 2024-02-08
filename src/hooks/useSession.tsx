@@ -120,7 +120,8 @@ export const useSession = (app: FirebaseApp | undefined, sessionId: string | und
         }
 
         if (!_session) {
-            resetSession(parseInt(localStorage.getItem("level") ?? '1', 10)%8 as Level).catch(console.log)
+            debugger
+            await resetSession(parseInt(localStorage.getItem("level") ?? '1', 10)%8 as Level).catch(console.log)
             return
         }
 
