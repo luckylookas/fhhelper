@@ -23,7 +23,7 @@ export const SwitchSession = ({close}: Props) => {
         if (phase === DONE) {
             if (sessionId) {
                 localStorage.setItem("sessionId", sessionId)
-                //todo set level on the session in firebase
+                localStorage.setItem("level", `${level ?? 1}`)
             }
             close()
         }

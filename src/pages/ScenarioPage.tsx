@@ -1,7 +1,7 @@
 import {Search} from "../components/search";
 import {RoundTracker} from "../components/RoundTracker";
 import {Elements} from "../components/Elements";
-import {ELITE, NORMAL, Rank} from "../model/model";
+import {ELITE, Level, NORMAL, Rank} from "../model/model";
 import React, {useCallback, useEffect, useMemo, useState} from "react";
 import {FirebaseApp} from "@firebase/app";
 import {useSession} from "../hooks/useSession";
@@ -21,23 +21,32 @@ interface Props {
 
 export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props) => {
     const [sessionId, setSessionId] = useState<string>('')
+    const [level, setLevel] = useState<Level>();
+    const session = useSession(firebaseApp, sessionId);
 
     useEffect(() => {
         if (!localStorage.getItem("sessionId")) {
             localStorage.setItem("sessionId", 'lukas')
         }
-
+        if (!localStorage.getItem("level")) {
+            localStorage.setItem("level", '1')
+        }
+        setLevel(parseInt(localStorage.getItem("level") ?? '1', 10)%8 as Level)
         setSessionId(localStorage.getItem("sessionId")!)
     }, [])
 
-    const session = useSession(firebaseApp, sessionId);
+    useEffect(() => {
+        if (session && level) {
+            session.setLevel(level).catch(console.log)
+        }
+    }, [session, level])
+
     const search = useSearch(firebaseApp, session.list);
 
     const [chosenColor, setChosenColor] = useState<number>()
     const [chosenToken, setChosenToken] = useState<number>()
 
     const [keyBoardActive, setKeyBoardActive] = useState(true)
-
 
     const addHandler = useCallback((rank: Rank, amount: number) => {
         if (chosenColor === undefined || chosenToken === undefined) {
@@ -102,7 +111,7 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
         },
         {
             keys: ['k'],
-            action: [() => new Promise(() => session.resetSession()), null]
+            action: [() => new Promise(() => session.resetSession(level ?? 1)), null]
         } as Handler,
     ]), [session])
     const handlers = useMemo(() => [

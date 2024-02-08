@@ -2,26 +2,29 @@ import {useCallback, useEffect, useMemo, useState} from "react";
 import {
     FirebaseSession,
     FirebaseSessionMonster,
-    hydrateSessionMonster, Level,
+    hydrateSessionMonster,
+    Level,
     Monster,
-    newSessionMonster, NORMAL, Rank,
+    newSessionMonster,
+    NORMAL,
+    Rank,
     SessionMonster
 } from "../model/model";
 import {FirebaseApp} from "@firebase/app";
 import {
-    writeBatch,
     collection,
-    updateDoc,
     deleteDoc,
     doc,
     DocumentData,
-    onSnapshot,
     getDoc,
     getDocs,
     getFirestore,
+    onSnapshot,
     query,
     setDoc,
     SnapshotOptions,
+    updateDoc,
+    writeBatch,
 } from 'firebase/firestore';
 import {monsterConverter} from "./useSearch";
 
@@ -65,32 +68,37 @@ export const useSession = (app: FirebaseApp | undefined, sessionId: string | und
 
     const db = useMemo(() => app ? getFirestore(app) : undefined, [app])
 
-    const resetSession = useCallback(() => {
+    const resetSession = useCallback((level: Level) => {
         if (db && sessionId) {
-            return updateDoc(doc(db, SESSION_COLLECTION, sessionId), {
-                round: 1,
-                fire: 0,
-                ice: 0,
-                earth: 0,
-                wind: 0,
-                dark: 0,
-                light: 0,
-                monstersRef: `${SESSION_COLLECTION}/${sessionId}/monsters`
-            })
-                .then(() =>
-                    getDocs(
-                        query(collection(db, SESSION_COLLECTION, sessionId, `monsters`))
-                            .withConverter(sessionMonsterConverter)
-                    ).then(it => it.docs.map(d => d.data()))
-                )
+            return getDoc(doc(db, SESSION_COLLECTION, sessionId)).then(result => result.exists())
+                .then(exists => {
+                    if (!exists) {
+                        return setDoc(doc(db, SESSION_COLLECTION, sessionId), {
+                            round: 1,
+                            level,
+                            fire: 0,
+                            ice: 0, earth: 0,
+                            wind: 0, dark: 0,
+                            light: 0, monstersRef: `${SESSION_COLLECTION}/${sessionId}/monsters`
+                        })
+                    } else {
+                        return updateDoc(doc(db, SESSION_COLLECTION, sessionId), {
+                            round: 1,
+                            level,
+                            fire: 0,
+                            ice: 0, earth: 0,
+                            wind: 0, dark: 0,
+                            light: 0, monstersRef: `${SESSION_COLLECTION}/${sessionId}/monsters`
+                        })
+                    }
+                }).then(() => getDocs(
+                query(collection(db, SESSION_COLLECTION, sessionId, `monsters`)).withConverter(sessionMonsterConverter)
+            ).then(it => it.docs.map(d => d.data())))
                 .then(monsters => {
                     const batch = writeBatch(db);
-                    monsters.forEach(monster => batch.update(doc(db, SESSION_COLLECTION, sessionId, `monsters`, monster.id).withConverter(sessionMonsterConverter),
-                        {
-                            rank: monster.rank.map(() => NORMAL),
-                            tokenHp: monster.tokenHp.map(() => 0),
-                        }
-                    ));
+                    monsters.forEach(monster => batch.update(doc(db, SESSION_COLLECTION, sessionId, `monsters`, monster.id).withConverter(sessionMonsterConverter), {
+                        rank: monster.rank.map(() => NORMAL), tokenHp: monster.tokenHp.map(() => 0),
+                    }));
                     return batch.commit()
                 })
         }
@@ -100,14 +108,22 @@ export const useSession = (app: FirebaseApp | undefined, sessionId: string | und
 
     const setLevel = useCallback((level: Level) => {
         if (db && sessionId) {
+            localStorage.setItem("level", `${level}`)
             return updateDoc(doc(db, SESSION_COLLECTION, sessionId), {level})
         }
+        return Promise.reject('not ready')
     }, [db, sessionId])
 
     const refreshSession = useCallback(async (_session?: FirebaseSession) => {
-        if (!db || !_session) {
+        if (!db) {
             return
         }
+
+        if (!_session) {
+            resetSession(parseInt(localStorage.getItem("level") ?? '1', 10)%8 as Level).catch(console.log)
+            return
+        }
+
         setSession(_session)
     }, [db])
 
@@ -135,14 +151,15 @@ export const useSession = (app: FirebaseApp | undefined, sessionId: string | und
         if (!session || !db || !sessionId) {
             return Promise.reject('not ready')
         }
-       return  setDoc(doc(db, SESSION_COLLECTION, sessionId).withConverter(sessionConverter), {...session,
-            round: session.round+1,
-            fire: Math.max(0, session.fire -1),
-            ice: Math.max(0, session.ice -1),
-            earth: Math.max(0, session.earth -1),
-            wind: Math.max(0, session.wind -1),
-            light: Math.max(0, session.light -1),
-            dark: Math.max(0, session.dark -1)
+        return setDoc(doc(db, SESSION_COLLECTION, sessionId).withConverter(sessionConverter), {
+            ...session,
+            round: session.round + 1,
+            fire: Math.max(0, session.fire - 1),
+            ice: Math.max(0, session.ice - 1),
+            earth: Math.max(0, session.earth - 1),
+            wind: Math.max(0, session.wind - 1),
+            light: Math.max(0, session.light - 1),
+            dark: Math.max(0, session.dark - 1)
         })
     }, [session, db, sessionId])
 
@@ -152,9 +169,9 @@ export const useSession = (app: FirebaseApp | undefined, sessionId: string | und
         }
 
 
-
-        return setDoc(doc(db, SESSION_COLLECTION, sessionId).withConverter(sessionConverter), {...session,
-            round: Math.max(0, session.round-1)
+        return setDoc(doc(db, SESSION_COLLECTION, sessionId).withConverter(sessionConverter), {
+            ...session,
+            round: Math.max(0, session.round - 1)
         })
 
     }, [session, db, sessionId])
@@ -163,7 +180,7 @@ export const useSession = (app: FirebaseApp | undefined, sessionId: string | und
         if (!session || !db) {
             return Promise.reject('not ready')
         }
-       return setDoc(doc(db, session.monstersRef, monster.id).withConverter(sessionMonsterConverter), newSessionMonster(monster, session.level))
+        return setDoc(doc(db, session.monstersRef, monster.id).withConverter(sessionMonsterConverter), newSessionMonster(monster, session.level))
     }, [session, db])
 
     const remove = useCallback((monster: Monster) => {
@@ -179,8 +196,8 @@ export const useSession = (app: FirebaseApp | undefined, sessionId: string | und
         }
         return setDoc(doc(db, session.monstersRef, monster.id).withConverter(sessionMonsterConverter), {
             ...monster,
-            rank: monster.rank.map((original, index) => index === token-1 ? rank : original),
-            tokenHp: monster.tokenHp.map((original, index) => index === token-1 ? monster.monster.hp[2*monster.level+rank] : original),
+            rank: monster.rank.map((original, index) => index === token - 1 ? rank : original),
+            tokenHp: monster.tokenHp.map((original, index) => index === token - 1 ? monster.monster.hp[2 * monster.level + rank] : original),
         } as SessionMonster)
     }, [db, session])
 
@@ -191,8 +208,8 @@ export const useSession = (app: FirebaseApp | undefined, sessionId: string | und
 
         return setDoc(doc(db, session.monstersRef, monster.id).withConverter(sessionMonsterConverter), {
             ...monster,
-            rank: monster.rank.map((original, index) => index === token-1 ? NORMAL : original),
-            tokenHp: monster.tokenHp.map((original, index) => index === token-1 ? 0 : original),
+            rank: monster.rank.map((original, index) => index === token - 1 ? NORMAL : original),
+            tokenHp: monster.tokenHp.map((original, index) => index === token - 1 ? 0 : original),
         } as SessionMonster)
     }, [db, session])
 
@@ -201,18 +218,18 @@ export const useSession = (app: FirebaseApp | undefined, sessionId: string | und
             return Promise.reject('not ready')
         }
 
-        if (nextHp > monster.monster.hp[2*monster.level+monster.rank[token-1]]) {
-            nextHp = monster.monster.hp[2*monster.level+monster.rank[token-1]];
+        if (nextHp > monster.monster.hp[2 * monster.level + monster.rank[token - 1]]) {
+            nextHp = monster.monster.hp[2 * monster.level + monster.rank[token - 1]];
         }
         if (nextHp < 0) {
             nextHp = 0;
         }
 
-       return setDoc(doc(db, session.monstersRef, monster.id).withConverter(sessionMonsterConverter), {
+        return setDoc(doc(db, session.monstersRef, monster.id).withConverter(sessionMonsterConverter), {
             ...monster,
-           rank: nextHp > 0 ? monster.rank : monster.rank.map((original, index) => index === token -1 ? NORMAL : original),
-           // rank: nextHp === 0 ? NORMAL : monster.rank,
-            tokenHp: monster.tokenHp.map((original, index) => index === token-1 ? nextHp : original),
+            rank: nextHp > 0 ? monster.rank : monster.rank.map((original, index) => index === token - 1 ? NORMAL : original),
+            // rank: nextHp === 0 ? NORMAL : monster.rank,
+            tokenHp: monster.tokenHp.map((original, index) => index === token - 1 ? nextHp : original),
         } as SessionMonster)
     }, [db, session])
 
@@ -221,7 +238,7 @@ export const useSession = (app: FirebaseApp | undefined, sessionId: string | und
             return
         }
         return onSnapshot(doc(db, SESSION_COLLECTION, sessionId).withConverter(sessionConverter), (hits) => {
-           refreshSession(hits.data()).catch(console.log)
+            refreshSession(hits.data()).catch(console.log)
         });
     }, [db, sessionId, refreshSession])
 
@@ -235,7 +252,27 @@ export const useSession = (app: FirebaseApp | undefined, sessionId: string | und
 
     }, [db, sessionId, refreshMonsters])
 
-    return {level: session?.level, setLevel, back, advanceRound, add, remove, list, resetSession, createToken,removeToken, setTokenHp, setElement: setElements,
+    return {
+        level: session?.level,
+        setLevel,
+        back,
+        advanceRound,
+        add,
+        remove,
+        list,
+        resetSession,
+        createToken,
+        removeToken,
+        setTokenHp,
+        setElement: setElements,
         round: session?.round,
-        elements: {earth: session?.earth, fire: session?.fire, ice: session?.ice, wind: session?.wind, light: session?.light, dark: session?.dark}}
+        elements: {
+            earth: session?.earth,
+            fire: session?.fire,
+            ice: session?.ice,
+            wind: session?.wind,
+            light: session?.light,
+            dark: session?.dark
+        }
+    }
 }
