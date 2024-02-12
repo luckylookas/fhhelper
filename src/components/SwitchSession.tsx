@@ -1,7 +1,6 @@
 import React, {useEffect, useRef, useState} from "react";
 import {Button} from "./button";
 import {Level} from "../model/model";
-import {useKeyboard} from "../hooks/useKeyboard";
 
 interface Props {
     close: () => void
@@ -18,7 +17,7 @@ export const SwitchSession = ({close}: Props) => {
     const [phase, setPhase] = useState(SCENARIO)
 
     const scenarioRef = useRef(null)
-
+    //
     useEffect(() => {
         if (phase === DONE) {
             if (sessionId) {
@@ -28,17 +27,17 @@ export const SwitchSession = ({close}: Props) => {
             close()
         }
     }, [phase, close, sessionId, level])
-
-    useKeyboard([
-        {
-            keys: ['z'],
-            action: [() => new Promise(() => {
-                setPhase(prev => (prev + 1) % 3)
-            }), () => new Promise(() => {
-                setPhase(prev => prev - 1)
-            })]
-        },
-    ], true)
+    //
+    // useKeyboard([
+    //     {
+    //         keys: ['z'],
+    //         action: [() => new Promise(() => {
+    //             setPhase(prev => (prev + 1) % 3)
+    //         }), () => new Promise(() => {
+    //             setPhase(prev => prev - 1)
+    //         })]
+    //     },
+    // ], true)
 
     return <div className={`absolute w-screen h-screen bg-transparent flex justify-center items-center z-20`}>
         <div className={`absolute w-full h-full bg-dark opacity-90  flex justify-center items-center z-20`}>

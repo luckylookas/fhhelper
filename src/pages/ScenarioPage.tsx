@@ -32,6 +32,7 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
             localStorage.setItem("level", '1')
         }
         setLevel(parseInt(localStorage.getItem("level") ?? '1', 10)%8 as Level)
+        debugger;
         setSessionId(localStorage.getItem("sessionId")!)
     }, [])
 
@@ -47,6 +48,8 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
     const [chosenToken, setChosenToken] = useState<number>()
 
     const [keyBoardActive, setKeyBoardActive] = useState(true)
+    const [numLock, setNumLock] = useState<boolean|undefined>()
+    const latestKey = useState<any>()
 
     const addHandler = useCallback((rank: Rank, amount: number) => {
         if (chosenColor === undefined || chosenToken === undefined) {
@@ -60,78 +63,130 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
             }
             return session.setTokenHp(session.list[chosenColor], chosenToken, session.list[chosenColor].tokenHp[chosenToken - 1] + amount)
         }
-
     }, [session, chosenToken, chosenColor])
-    const numberHandlers = useMemo(() => Array(10).fill(0).map((_, number) => (
-        {
-            keys: [`${number}`],
-            action: [() => new Promise(() => setChosenToken(number ? number : 10)), () => {
-                switch (number) {
-                    case 1:
-                        return session.setElement({earth: session.elements?.earth ? 0 : 2})
-                    case 2:
-                        return session.setElement({wind: session.elements?.wind ? 0 : 2})
-                    case 3:
-                        return session.setElement({fire: session.elements?.fire ? 0 : 2})
-                    case 4:
-                        return session.setElement({ice: session.elements?.ice ? 0 : 2})
-                    case 5:
-                        return session.setElement({light: session.elements?.light ? 0 : 2})
-                    case 6:
-                        return session.setElement({dark: session.elements?.dark ? 0 : 2})
-                    default:
-                        return Promise.resolve()
-                }
-            }
-            ]
-        } as Handler
-    )), [session])
-    const colorHandlers = useMemo(() => colors.map(color => (
-        {
-            keys: [color.toLowerCase().substring(0, 1)],
-            action: [
-                () => new Promise(() => setChosenColor(prev => {
-                    if (prev !== colors.indexOf(color)) {
-                        setChosenToken(undefined)
-                    }
-                    return colors.indexOf(color)
-                })),
-                () => new Promise(() => setChosenColor(prev => {
-                    if (prev !== colors.lastIndexOf(color)) {
-                        setChosenToken(undefined)
-                    }
-                    return colors.lastIndexOf(color)
-                }))]
-        } as Handler
-    )), [])
-    const controlHandlers = useMemo(() => ([
-        {
-            keys: ['z'],
-            action: [() => new Promise(() => session.advanceRound()), () => new Promise(() => session.back())]
-        },
-        {
-            keys: ['k'],
-            action: [() => new Promise(() => session.resetSession(level ?? 1)), null]
-        } as Handler,
-    ]), [session])
-    const handlers = useMemo(() => [
-        ...commonKeyBoardControls,
-        ...colorHandlers,
-        ...numberHandlers,
-        ...controlHandlers,
-        {
-            keys: ['numpadadd', '+', 'equal', '_', 'a'],
-            action: [() => addHandler(NORMAL, 1), () => addHandler(ELITE, 1)]
-        },
-        {
-            keys: ['numpadsubtract', '-', 's'],
-            action: [() => addHandler(NORMAL, -1), () => addHandler(ELITE, -1)]
-        },
-    ], [commonKeyBoardControls, colorHandlers, numberHandlers, addHandler, controlHandlers])
 
-    useKeyboard(handlers, keyBoardActive)
+    const handlersv2 = useMemo(() => [
+        ...commonKeyBoardControls,
+        {
+            matcher: (e: KeyboardEvent) => e.key.toLowerCase() === 'numlock',
+            action: (e: KeyboardEvent) => Promise.resolve(setNumLock(e.getModifierState('NumLock')))
+        },
+        {
+            matcher: (e: KeyboardEvent) => `-` === e.key.toLowerCase(),
+            action: (e: KeyboardEvent) => Promise.resolve(addHandler(e.getModifierState("NumLock") ? NORMAL : ELITE, -1))
+        },
+        {
+            matcher: (e: KeyboardEvent) => `+` === e.key.toLowerCase(),
+            action: (e: KeyboardEvent) => Promise.resolve(addHandler(e.getModifierState("NumLock") ? NORMAL : ELITE, 1))
+        },
+        {
+            matcher: (e: KeyboardEvent) => `end` === e.key.toLowerCase() && e.code.toLowerCase() === 'numpad1',
+            action: (e: KeyboardEvent) => Promise.resolve(session.setElement({earth: session.elements.earth ? 0 : 2})).catch()
+        },
+        {
+            matcher: (e: KeyboardEvent) => `arrowdown` === e.key.toLowerCase() && e.code.toLowerCase() === 'numpad2',
+            action: (e: KeyboardEvent) => Promise.resolve(session.setElement({wind: session.elements.wind ? 0 : 2}))
+
+        },
+        {
+            matcher: (e: KeyboardEvent) => `arrowleft` === e.key.toLowerCase() && e.code.toLowerCase() === 'numpad4',
+            action: (e: KeyboardEvent) => Promise.resolve(session.setElement({fire: session.elements.fire ? 0 : 2}))
+        },
+        {
+            matcher: (e: KeyboardEvent) => `clear` === e.key.toLowerCase() && e.code.toLowerCase() === 'numpad5',
+            action: (e: KeyboardEvent) => Promise.resolve(session.setElement({ice: session.elements.ice ? 0 : 2}))
+        },
+        {
+            matcher: (e: KeyboardEvent) => `home` === e.key.toLowerCase() && e.code.toLowerCase() === 'numpad7',
+            action: (e: KeyboardEvent) => Promise.resolve(session.setElement({light: session.elements.light ? 0 : 2}))
+        },
+        {
+            matcher: (e: KeyboardEvent) => `arrowup` === e.key.toLowerCase() && e.code.toLowerCase() === 'numpad8',
+            action: (e: KeyboardEvent) => Promise.resolve(session.setElement({dark: session.elements.dark ? 0 : 2}))
+        },
+        {
+          matcher: (e: KeyboardEvent) => `1234567890`.includes(e.key),
+          action: (e: KeyboardEvent) => {
+              const key = parseInt(e.key, 10)
+              return Promise.resolve(setChosenToken(key > 0 ? key : 10))
+          }
+        },
+        {
+            matcher: (e: KeyboardEvent) => `home` === e.key.toLowerCase(),
+            action: (e: KeyboardEvent) => new Promise(() => {
+                setChosenColor(0)
+                setChosenToken(undefined)
+            })
+
+        },
+        {
+            matcher: (e: KeyboardEvent) => `pageup` === e.key.toLowerCase(),
+            action: (e: KeyboardEvent) => new Promise(() => {
+                setChosenColor(1)
+                setChosenToken(undefined)
+
+            })
+
+        },
+        {
+            matcher: (e: KeyboardEvent) => `clear` === e.key.toLowerCase(),
+            action: (e: KeyboardEvent) => new Promise(() => {
+                setChosenColor(2)
+                setChosenToken(undefined)
+
+            })
+
+        },
+        {
+            matcher: (e: KeyboardEvent) => `=` === e.key.toLowerCase(),
+            action: (e: KeyboardEvent) => new Promise(() => {
+                setChosenColor(3)
+                setChosenToken(undefined)
+
+            })
+
+        },
+        {
+            matcher: (e: KeyboardEvent) => `/` === e.key.toLowerCase(),
+            action: (e: KeyboardEvent) => new Promise(() => {
+                setChosenColor(4)
+                setChosenToken(undefined)
+
+            })
+
+        },
+        {
+            matcher: (e: KeyboardEvent) => `*` === e.key.toLowerCase(),
+            action: (e: KeyboardEvent) => new Promise(() => {
+                setChosenColor(5)
+                setChosenToken(undefined)
+
+            })
+        },
+
+        {
+            matcher: (e: KeyboardEvent): boolean => {
+                latestKey[1]({
+                    key: e.key.toLowerCase(),
+                    code: e.code.toLowerCase(),
+                    numLock: e.getModifierState("NumLock"),
+                    handled: false,
+                })
+                return true
+            },
+            action: (e: KeyboardEvent) => {
+                return Promise.resolve()
+            }
+        }
+    ], [commonKeyBoardControls, latestKey, session])
+
+
+    useKeyboard(handlersv2, keyBoardActive)
 
     return <>
+        <h1>
+            {`NUMLOCK: ${numLock}`}
+        </h1>
         {session.round === 0 ?
             <Search {...search}
                     onInput={() => setKeyBoardActive(false)}

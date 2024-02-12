@@ -61,7 +61,6 @@ const sessionMonsterConverter = {
     }
 };
 
-
 export const useSession = (app: FirebaseApp | undefined, sessionId: string | undefined) => {
     const [session, setSession] = useState<FirebaseSession>()
     const [list, setList] = useState<SessionMonster[]>([])
@@ -124,7 +123,7 @@ export const useSession = (app: FirebaseApp | undefined, sessionId: string | und
             return
         }
         setSession(_session)
-    }, [db])
+    }, [db, resetSession])
 
     const refreshMonsters = useCallback(async (monsters?: FirebaseSessionMonster[]) => {
         if (!db || !monsters?.length || !session) {
@@ -140,6 +139,7 @@ export const useSession = (app: FirebaseApp | undefined, sessionId: string | und
     }, [db, session])
 
     const setElements = useCallback((element: Partial<FirebaseSession>) => {
+        debugger;
         if (!session || !db || !sessionId) {
             return Promise.reject('not ready')
         }
