@@ -51,6 +51,8 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
     const [numLock, setNumLock] = useState<boolean|undefined>()
     const latestKey = useState<any>()
 
+    const [wasMax, setWasMax] = useState(false)
+
     const addHandler = useCallback((rank: Rank, amount: number) => {
         if (chosenColor === undefined || chosenToken === undefined) {
             return Promise.resolve()
@@ -86,7 +88,6 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
         {
             matcher: (e: KeyboardEvent) => `arrowdown` === e.key.toLowerCase() && e.code.toLowerCase() === 'numpad2',
             action: (e: KeyboardEvent) => Promise.resolve(session.setElement({wind: session.elements.wind ? 0 : 2}))
-
         },
         {
             matcher: (e: KeyboardEvent) => `arrowleft` === e.key.toLowerCase() && e.code.toLowerCase() === 'numpad4',
@@ -180,12 +181,94 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
         }
     ], [commonKeyBoardControls, latestKey, session])
 
+    const handlersCursor = useMemo(() => [
+        ...commonKeyBoardControls,
+        {
+            matcher: (e: KeyboardEvent) => e.key.toLowerCase() === 'arrowleft',
+            action: (e: KeyboardEvent) =>
+                Promise.resolve(setChosenColor(prev => {
+                    const next = prev === undefined ? 0 : prev - 1 < 0 ? session.list.length - 1 : prev -1
+                    if (wasMax) {
+                        setChosenToken(session.list[next].tokens.length)
+                    } else if (session.list[next].tokens.length < (chosenToken ?? 0)) {
+                        setWasMax(true)
+                        setChosenToken(session.list[next].tokens.length)
+                    }
+                    return next;
+                }))
 
-    useKeyboard(handlersv2, keyBoardActive)
+        },
+        {
+            matcher: (e: KeyboardEvent) => e.key.toLowerCase() === 'arrowright',
+            action: (e: KeyboardEvent) =>
+                Promise.resolve(setChosenColor(prev => {
+
+                    const next = prev === undefined ? 0 : (prev+1) % session.list.length
+                    if (wasMax) {
+                        setChosenToken(session.list[next].tokens.length)
+                    } else if (session.list[next].tokens.length < (chosenToken ?? 0)) {
+                        setWasMax(true)
+                        setChosenToken(session.list[next].tokens.length)
+                    }
+
+                    return next;
+                }))
+
+        },
+        {
+            matcher: (e: KeyboardEvent) => e.key.toLowerCase() === 'arrowup',
+            action: (e: KeyboardEvent) => Promise.resolve(setChosenToken(prev => {
+                if (prev === undefined) {
+                    return 1
+                }
+
+                if (chosenColor === undefined) {
+                    const max =  session.list.map(it => it.tokens.length).reduce((a,b) =>  a>b ? a : b, 6)
+                    if (prev - 1 < 1) {
+                        setWasMax(true)
+                        return max
+                    }
+                } else {
+                    const max =  session.list[chosenColor].tokens.length
+                    if (prev - 1 < 1) {
+                        setWasMax(true)
+                        return max
+                    }
+                }
+                setWasMax(false)
+
+                return prev - 1
+            }))
+        },
+        {
+            matcher: (e: KeyboardEvent) => e.key.toLowerCase() === 'arrowdown',
+            action: (e: KeyboardEvent) => Promise.resolve(setChosenToken(prev => {
+                if (prev === undefined) {
+                    return 1
+                }
+
+                if (chosenColor === undefined) {
+                    setChosenColor(0)
+                }
+
+
+                const max =  session.list[chosenColor ?? 0].tokens.length
+                setWasMax(prev + 1 === max)
+                if (prev + 1 > max) {
+                    return 1
+                }
+
+
+                return prev + 1
+            }))
+        },
+    ], [commonKeyBoardControls, latestKey, session])
+
+    useKeyboard(handlersCursor, keyBoardActive)
 
     return <>
         <h1>
-            {`NUMLOCK: ${numLock}`}
+            {`color: ${chosenColor}`}
         </h1>
         {session.round === 0 ?
             <Search {...search}
@@ -290,9 +373,9 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
 
                             {monster.tokens.map((token, tokenIndex) =>
                                 <li key={`${monster.id}-${tokenIndex}`} className={` 
-                                        ${chosenToken === tokenIndex + 1 && chosenColor === monsterIndex ? 'shadow-glow shadow-highlight z-20' : 'z-1'} 
+                                        ${chosenToken === tokenIndex + 1 && (chosenColor === monsterIndex || chosenToken === undefined) ? 'shadow-glow shadow-highlight z-20' : 'z-1'} 
 
-                                        ${token.rank === ELITE && !(chosenToken === tokenIndex + 1 && chosenColor === monsterIndex) ? `${theme.seethrough ? 'shadow-glow shadow-elite' : 'bg-elite'}` : 'bg-transparent'}
+                                        ${token.rank === ELITE && !(chosenToken === tokenIndex + 1 && (chosenColor === monsterIndex || chosenToken === undefined)) ? `${theme.seethrough ? 'shadow-glow shadow-elite' : 'bg-elite'}` : 'bg-transparent'}
                                          
                                          
                                          flex ${token.hp ? 'flex-row' : 'flex-col'} 
