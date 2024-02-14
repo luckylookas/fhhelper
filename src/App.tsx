@@ -56,7 +56,7 @@ function App() {
             case "switchSession":
                 return <SwitchSession close={() => setPhase('scenario')}/>
         }
-    }, [phase, seethrough, firebaseApp, townName])
+    }, [phase, seethrough, firebaseApp, townName, commonHandlers])
 
     return <PageContainer theme={theme}>{route}</PageContainer>
 }

@@ -49,10 +49,7 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
     const [chosenToken, setChosenToken] = useState<number>()
 
     const [keyBoardActive, setKeyBoardActive] = useState(true)
-    const [numLock, setNumLock] = useState<boolean|undefined>()
     const latestKey = useState<any>()
-
-    const [wasMax, setWasMax] = useState(false)
 
     const addHandler = useCallback((rank: Rank, amount: number) => {
         if (chosenColor === undefined || chosenToken === undefined) {
@@ -70,10 +67,6 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
 
     const handlersv2 = useMemo(() => [
         ...commonKeyBoardControls,
-        {
-            matcher: (e: KeyboardEvent) => e.key.toLowerCase() === 'numlock',
-            action: (e: KeyboardEvent) => Promise.resolve(setNumLock(e.getModifierState('NumLock')))
-        },
         {
             matcher: (e: KeyboardEvent) => `-` === e.key.toLowerCase(),
             action: (e: KeyboardEvent) => Promise.resolve(addHandler(e.getModifierState("NumLock") ? NORMAL : ELITE, -1))
@@ -182,7 +175,7 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
                 return Promise.resolve()
             }
         }
-    ], [commonKeyBoardControls, latestKey, session])
+    ], [commonKeyBoardControls, latestKey, session, addHandler])
 
     useKeyboard(handlersv2, keyBoardActive)
 
@@ -203,7 +196,11 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
                         <h2 onClick={async () => await session.remove(monster.monster)}
                             className={`${theme.seethrough ? `bg-${colors[monsterIndex % 4]}` : 'bg-inherit'} py-2 text-base text-center cursor-pointer hover:line-through`}>{monster.monster.name}</h2>
 
-                        <ol className={`${theme.seethrough ? `border-t-8 border-2 border-solid border-${colors[monsterIndex % 4]}` : `bg-${colors[monsterIndex % 4]}`} ${chosenColor === monsterIndex && chosenToken === undefined ? 'shadow-glow shadow-highlight z-2' : 'z-1'}`}
+                        <ol className={`${theme.seethrough ? `border-t-8 border-2 
+                        
+                         border-solid border-${colors[monsterIndex % 4]}` : `bg-${colors[monsterIndex % 4]}`}
+                         ${chosenColor === monsterIndex && chosenToken === undefined ? 'shadow-glow shadow-highlight z-2' : 'z-1'}`}
+
                         >
                             <li id={'stats'}
                                 className={`bg-transparent px-10 py-2 flex flex-row justify-between`}>
