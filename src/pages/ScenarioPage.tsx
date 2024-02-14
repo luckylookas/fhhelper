@@ -23,6 +23,7 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
     const [sessionId, setSessionId] = useState<string>('')
     const [level, setLevel] = useState<Level>();
     const session = useSession(firebaseApp, sessionId);
+    const [init, setInit] = useState(false)
 
     useEffect(() => {
         if (!localStorage.getItem("sessionId")) {
@@ -36,10 +37,11 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
     }, [])
 
     useEffect(() => {
-        if (session && level) {
+        if (session && level !== undefined && !init) {
+            setInit(true)
             session.setLevel(level).catch(console.log)
         }
-    }, [session, level])
+    }, [session, level, init])
 
     const search = useSearch(firebaseApp, session.list);
 
@@ -47,6 +49,7 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
     const [chosenToken, setChosenToken] = useState<number>()
 
     const [keyBoardActive, setKeyBoardActive] = useState(true)
+    const latestKey = useState<any>()
 
     const addHandler = useCallback((rank: Rank, amount: number) => {
         if (chosenColor === undefined || chosenToken === undefined) {
@@ -60,76 +63,121 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
             }
             return session.setTokenHp(session.list[chosenColor], chosenToken, session.list[chosenColor].tokenHp[chosenToken - 1] + amount)
         }
-
     }, [session, chosenToken, chosenColor])
-    const numberHandlers = useMemo(() => Array(10).fill(0).map((_, number) => (
-        {
-            keys: [`${number}`],
-            action: [() => new Promise(() => setChosenToken(number ? number : 10)), () => {
-                switch (number) {
-                    case 1:
-                        return session.setElement({earth: session.elements?.earth ? 0 : 2})
-                    case 2:
-                        return session.setElement({wind: session.elements?.wind ? 0 : 2})
-                    case 3:
-                        return session.setElement({fire: session.elements?.fire ? 0 : 2})
-                    case 4:
-                        return session.setElement({ice: session.elements?.ice ? 0 : 2})
-                    case 5:
-                        return session.setElement({light: session.elements?.light ? 0 : 2})
-                    case 6:
-                        return session.setElement({dark: session.elements?.dark ? 0 : 2})
-                    default:
-                        return Promise.resolve()
-                }
-            }
-            ]
-        } as Handler
-    )), [session])
-    const colorHandlers = useMemo(() => colors.map(color => (
-        {
-            keys: [color.toLowerCase().substring(0, 1)],
-            action: [
-                () => new Promise(() => setChosenColor(prev => {
-                    if (prev !== colors.indexOf(color)) {
-                        setChosenToken(undefined)
-                    }
-                    return colors.indexOf(color)
-                })),
-                () => new Promise(() => setChosenColor(prev => {
-                    if (prev !== colors.lastIndexOf(color)) {
-                        setChosenToken(undefined)
-                    }
-                    return colors.lastIndexOf(color)
-                }))]
-        } as Handler
-    )), [])
-    const controlHandlers = useMemo(() => ([
-        {
-            keys: ['z'],
-            action: [() => new Promise(() => session.advanceRound()), () => new Promise(() => session.back())]
-        },
-        {
-            keys: ['k'],
-            action: [() => new Promise(() => session.resetSession(level ?? 1)), null]
-        } as Handler,
-    ]), [session])
-    const handlers = useMemo(() => [
-        ...commonKeyBoardControls,
-        ...colorHandlers,
-        ...numberHandlers,
-        ...controlHandlers,
-        {
-            keys: ['numpadadd', '+', 'equal', '_', 'a'],
-            action: [() => addHandler(NORMAL, 1), () => addHandler(ELITE, 1)]
-        },
-        {
-            keys: ['numpadsubtract', '-', 's'],
-            action: [() => addHandler(NORMAL, -1), () => addHandler(ELITE, -1)]
-        },
-    ], [commonKeyBoardControls, colorHandlers, numberHandlers, addHandler, controlHandlers])
 
-    useKeyboard(handlers, keyBoardActive)
+    const handlersv2 = useMemo(() => [
+        ...commonKeyBoardControls,
+        {
+            matcher: (e: KeyboardEvent) => `-` === e.key.toLowerCase(),
+            action: (e: KeyboardEvent) => Promise.resolve(addHandler(e.getModifierState("NumLock") ? NORMAL : ELITE, -1))
+        },
+        {
+            matcher: (e: KeyboardEvent) => `+` === e.key.toLowerCase(),
+            action: (e: KeyboardEvent) => Promise.resolve(addHandler(e.getModifierState("NumLock") ? NORMAL : ELITE, 1))
+        },
+        {
+            matcher: (e: KeyboardEvent) => `end` === e.key.toLowerCase() && e.code.toLowerCase() === 'numpad1',
+            action: (e: KeyboardEvent) => Promise.resolve(session.setElement({earth: session.elements.earth ? 0 : 2})).catch()
+        },
+        {
+            matcher: (e: KeyboardEvent) => `arrowdown` === e.key.toLowerCase() && e.code.toLowerCase() === 'numpad2',
+            action: (e: KeyboardEvent) => Promise.resolve(session.setElement({wind: session.elements.wind ? 0 : 2}))
+        },
+        {
+            matcher: (e: KeyboardEvent) => `arrowleft` === e.key.toLowerCase() && e.code.toLowerCase() === 'numpad4',
+            action: (e: KeyboardEvent) => Promise.resolve(session.setElement({fire: session.elements.fire ? 0 : 2}))
+        },
+        {
+            matcher: (e: KeyboardEvent) => `clear` === e.key.toLowerCase() && e.code.toLowerCase() === 'numpad5',
+            action: (e: KeyboardEvent) => Promise.resolve(session.setElement({ice: session.elements.ice ? 0 : 2}))
+        },
+        {
+            matcher: (e: KeyboardEvent) => `home` === e.key.toLowerCase() && e.code.toLowerCase() === 'numpad7',
+            action: (e: KeyboardEvent) => Promise.resolve(session.setElement({light: session.elements.light ? 0 : 2}))
+        },
+        {
+            matcher: (e: KeyboardEvent) => `arrowup` === e.key.toLowerCase() && e.code.toLowerCase() === 'numpad8',
+            action: (e: KeyboardEvent) => Promise.resolve(session.setElement({dark: session.elements.dark ? 0 : 2}))
+        },
+        {
+          matcher: (e: KeyboardEvent) => `1234567890`.includes(e.key),
+          action: (e: KeyboardEvent) => {
+              const key = parseInt(e.key, 10)
+              return Promise.resolve(setChosenToken(key > 0 ? key : 10))
+          }
+        },
+        {
+            matcher: (e: KeyboardEvent) => `home` === e.key.toLowerCase(),
+            action: (e: KeyboardEvent) => new Promise(() => {
+                setChosenColor(0)
+                setChosenToken(undefined)
+            })
+
+        },
+        {
+            matcher: (e: KeyboardEvent) => `pageup` === e.key.toLowerCase(),
+            action: (e: KeyboardEvent) => new Promise(() => {
+                setChosenColor(1)
+                setChosenToken(undefined)
+
+            })
+
+        },
+        {
+            matcher: (e: KeyboardEvent) => `delete` === e.key.toLowerCase(),
+            action: (e: KeyboardEvent) => new Promise(() => {
+                setChosenColor(2)
+                setChosenToken(undefined)
+
+            })
+
+        },
+        {
+            matcher: (e: KeyboardEvent) => `end` === e.key.toLowerCase(),
+            action: (e: KeyboardEvent) => new Promise(() => {
+                setChosenColor(3)
+                setChosenToken(undefined)
+
+            })
+
+        },
+        {
+            matcher: (e: KeyboardEvent) => `pagedown` === e.key.toLowerCase(),
+            action: (e: KeyboardEvent) => new Promise(() => {
+                setChosenColor(4)
+                setChosenToken(undefined)
+
+            })
+        },
+        {
+            matcher: (e: KeyboardEvent) => `arrowleft` === e.key.toLowerCase() && e.code.toLowerCase() !== 'numpad4',
+            action: (e: KeyboardEvent) => Promise.resolve(session.back())
+        },
+        {
+            matcher: (e: KeyboardEvent) => `arrowright` === e.key.toLowerCase() && e.code.toLowerCase() !== 'numpad6',
+            action: (e: KeyboardEvent) => Promise.resolve(session.advanceRound())
+        },
+        {
+            matcher: (e: KeyboardEvent) => `backspace` === e.key.toLowerCase() && e.code.toLowerCase() !== 'numpad6',
+            action: (e: KeyboardEvent) => Promise.resolve(session.resetSession(session.level ?? 0))
+        },
+        {
+            matcher: (e: KeyboardEvent): boolean => {
+                latestKey[1]({
+                    key: e.key.toLowerCase(),
+                    code: e.code.toLowerCase(),
+                    numLock: e.getModifierState("NumLock"),
+                    handled: false,
+                })
+                return true
+            },
+            action: (e: KeyboardEvent) => {
+                return Promise.resolve()
+            }
+        }
+    ], [commonKeyBoardControls, latestKey, session, addHandler])
+
+    useKeyboard(handlersv2, keyBoardActive)
 
     return <>
         {session.round === 0 ?
@@ -137,7 +185,7 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
                     onInput={() => setKeyBoardActive(false)}
                     onBlur={() => setKeyBoardActive(true)}
                     onResultClick={async (result) => await session.add(result)}/> : null}
-        <RoundTracker round={session.round} back={async () => await session.back()}
+        <RoundTracker session={sessionId} round={session.round} back={async () => await session.back()}
                       advanceRound={async () => await session.advanceRound()}/>
         <Elements {...session.elements}
                   setElement={async (partial) => await session.setElement(partial)}/>
@@ -148,7 +196,11 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
                         <h2 onClick={async () => await session.remove(monster.monster)}
                             className={`${theme.seethrough ? `bg-${colors[monsterIndex % 4]}` : 'bg-inherit'} py-2 text-base text-center cursor-pointer hover:line-through`}>{monster.monster.name}</h2>
 
-                        <ol className={`${theme.seethrough ? `border-t-8 border-2 border-solid border-${colors[monsterIndex % 4]}` : `bg-${colors[monsterIndex % 4]}`} ${chosenColor === monsterIndex && chosenToken === undefined ? 'shadow-glow shadow-highlight z-2' : 'z-1'}`}
+                        <ol className={`${theme.seethrough ? `border-t-8 border-2 
+                        
+                         border-solid border-${colors[monsterIndex % 4]}` : `bg-${colors[monsterIndex % 4]}`}
+                         ${chosenColor === monsterIndex && chosenToken === undefined ? 'shadow-glow shadow-highlight z-2' : 'z-1'}`}
+
                         >
                             <li id={'stats'}
                                 className={`bg-transparent px-10 py-2 flex flex-row justify-between`}>
@@ -235,9 +287,9 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
 
                             {monster.tokens.map((token, tokenIndex) =>
                                 <li key={`${monster.id}-${tokenIndex}`} className={` 
-                                        ${chosenToken === tokenIndex + 1 && chosenColor === monsterIndex ? 'shadow-glow shadow-highlight z-20' : 'z-1'} 
+                                        ${chosenToken === tokenIndex + 1 && (chosenColor === monsterIndex || chosenToken === undefined) ? 'shadow-glow shadow-highlight z-20' : 'z-1'} 
 
-                                        ${token.rank === ELITE && !(chosenToken === tokenIndex + 1 && chosenColor === monsterIndex) ? `${theme.seethrough ? 'shadow-glow shadow-elite' : 'bg-elite'}` : 'bg-transparent'}
+                                        ${token.rank === ELITE && !(chosenToken === tokenIndex + 1 && (chosenColor === monsterIndex || chosenToken === undefined)) ? `${theme.seethrough ? 'shadow-glow shadow-elite' : 'bg-elite'}` : 'bg-transparent'}
                                          
                                          
                                          flex ${token.hp ? 'flex-row' : 'flex-col'} 

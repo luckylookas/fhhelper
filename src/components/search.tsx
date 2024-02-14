@@ -18,6 +18,7 @@ export const Search = ({search, results, onResultClick, onInput, onBlur}: Props)
     return <div className='relative flex flex-col p-2 z-10'>
         <input
             onBlur={onBlur}
+            onFocus={onInput}
             onInput={onInput}
             className='basis-full text-sm border-text border-solid border-b-2 rounded-none' placeholder='search...' onChange={e => search(e.target.value)}/>
         {results.length ?

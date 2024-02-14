@@ -6,7 +6,7 @@ export const useTheme = () => {
     const [seethrough, setseethrough] = useState(false);
     const themeHandler = useMemo(() => {
         return {
-            keys: ['m'],
+            matcher: (e: KeyboardEvent) => e.key === 'k',
             action: [() => new Promise(() =>
                 setTheme(prev => {
                     localStorage.setItem("theme", `${(prev + 1) % themes.length}`)

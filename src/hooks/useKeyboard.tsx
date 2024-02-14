@@ -2,29 +2,25 @@ import {useCallback, useEffect} from "react";
 
 
 export interface Handler {
-    keys: string[]
-    action: (() => Promise<any> | null)[]
+    matcher: (e: KeyboardEvent) => boolean
+    action: (e: KeyboardEvent) => Promise<any>
 }
 
 export const useKeyboard  = (handlers: Handler[], active: boolean) => {
 
     const handler = useCallback(
         (event: KeyboardEvent) => {
-            if (event.isComposing || !event.code || !active) {
+            if (event.isComposing || !active) {
                 return;
             }
-            const alt = event.altKey
-            const key = event.code.substring(event.code.length-1).toLowerCase()
-            const keyFull = event.code.toLowerCase()
 
-            handlers.filter(handler => (handler.keys.includes(key)|| handler.keys.includes(keyFull)))
-                .filter(handler => (alt && handler.action[1] !== null) || (!alt && handler.action[0] !== null))
-                .map(handler => handler.action[alt ? 1 : 0])
-                .forEach(action => {
-                    event.stopPropagation()
-                    event.preventDefault()
-                    action()!.catch(console.log)
-                })
+            const handler = handlers.find(handler => handler.matcher(event))
+            if (handler) {
+                event.stopPropagation()
+                event.preventDefault()
+                handler.action(event).catch(console.log)
+            }
+
 
     }, [handlers, active])
 

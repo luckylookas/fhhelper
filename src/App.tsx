@@ -1,7 +1,7 @@
 import React, {useEffect, useMemo, useState} from 'react';
 import './App.css';
 import {useFirebase} from "./hooks/useFirebase";
-import {Handler, useKeyboard} from "./hooks/useKeyboard";
+import {useKeyboard} from "./hooks/useKeyboard";
 import {Login} from "./components/login";
 import {SwitchSession} from "./components/SwitchSession";
 import {TownPage} from "./pages/TownPage";
@@ -15,27 +15,22 @@ function App() {
     }, [])
 
     const {firebaseApp} = useFirebase();
-    const {seethrough, theme, themeHandler} = useTheme();
+    const {seethrough, theme} = useTheme();
 
-    const [phase, setPhase] = useState<'login' | 'scenario' | 'town' | 'switchSession'>('login')
+    const [phase, setPhase] = useState<'login' | 'scenario' | 'town' | 'switchSession'>('scenario')
 
-    const phaseHandler = useMemo(() => {
-        return {
-            keys: ['k'],
-            action: [null, () =>
-                new Promise(() => {
-                    switch (phase) {
-                        case "town":
-                            setPhase('switchSession')
-                            break;
-                        default:
-                            setPhase('town');
-                            break;
-                    }
-                })
-            ]
-        } as Handler
-    }, [phase])
+    const commonHandlers = useMemo(() => [
+        {
+            matcher: (e: KeyboardEvent) => e.key.toLowerCase() === 'backspace',
+            action: () => {
+                switch (phase) {
+                    case "town":
+                        return Promise.resolve(setPhase('switchSession'))
+                    default:
+                        return Promise.resolve(setPhase('town'))
+                }
+            }
+        }], [phase])
 
     useEffect(() => {
         if (firebaseApp && phase === 'login') {
@@ -43,24 +38,25 @@ function App() {
         }
     }, [firebaseApp, phase])
 
-    useKeyboard([phaseHandler], true)
+    useKeyboard(commonHandlers, true)
 
     const route = useMemo(() => {
         if (!firebaseApp) {
-            return <Login />
+            return <Login/>
         }
 
         switch (phase) {
             case 'login':
-                return <Login />
+                return <Login/>
             case "scenario":
-                return <ScenarioPage commonKeyBoardControls={[themeHandler, phaseHandler]} theme={{seethrough}} firebaseApp={firebaseApp}/>
+                return <ScenarioPage commonKeyBoardControls={commonHandlers} theme={{seethrough}}
+                                     firebaseApp={firebaseApp}/>
             case "town":
-                return  <TownPage commonKeyBoardControls={[themeHandler, phaseHandler]} firebaseApp={firebaseApp} townName={townName}/>
+                return <TownPage commonKeyBoardControls={commonHandlers} firebaseApp={firebaseApp} townName={townName}/>
             case "switchSession":
                 return <SwitchSession close={() => setPhase('scenario')}/>
         }
-    }, [phase, themeHandler, phaseHandler, seethrough, firebaseApp, townName])
+    }, [phase, seethrough, firebaseApp, townName, commonHandlers])
 
     return <PageContainer theme={theme}>{route}</PageContainer>
 }

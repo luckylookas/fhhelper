@@ -61,7 +61,6 @@ const sessionMonsterConverter = {
     }
 };
 
-
 export const useSession = (app: FirebaseApp | undefined, sessionId: string | undefined) => {
     const [session, setSession] = useState<FirebaseSession>()
     const [list, setList] = useState<SessionMonster[]>([])
@@ -70,12 +69,13 @@ export const useSession = (app: FirebaseApp | undefined, sessionId: string | und
 
     const resetSession = useCallback((level: Level) => {
         if (db && sessionId) {
+            localStorage.setItem("level", `${level}`)
             return getDoc(doc(db, SESSION_COLLECTION, sessionId)).then(result => result.exists())
                 .then(exists => {
                     if (!exists) {
                         return setDoc(doc(db, SESSION_COLLECTION, sessionId), {
                             round: 1,
-                            level,
+                          level,
                             fire: 0,
                             ice: 0, earth: 0,
                             wind: 0, dark: 0,
@@ -122,9 +122,12 @@ export const useSession = (app: FirebaseApp | undefined, sessionId: string | und
         if (!_session) {
             await resetSession(parseInt(localStorage.getItem("level") ?? '1', 10)%8 as Level).catch(console.log)
             return
+        } else {
+            localStorage.setItem("level", `${_session.level}`)
+
         }
         setSession(_session)
-    }, [db])
+    }, [db, resetSession])
 
     const refreshMonsters = useCallback(async (monsters?: FirebaseSessionMonster[]) => {
         if (!db || !monsters?.length || !session) {
