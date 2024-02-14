@@ -1,6 +1,7 @@
 import React, {useEffect, useRef, useState} from "react";
 import {Button} from "./button";
 import {Level} from "../model/model";
+import {useKeyboard} from "../hooks/useKeyboard";
 
 interface Props {
     close: () => void
@@ -11,7 +12,7 @@ const LEVEL = 2
 const DONE = 0
 
 export const SwitchSession = ({close}: Props) => {
-    const [sessionId, setSessionId] = useState<string>()
+    const [sessionId, setSessionId] = useState<string>('')
     const [level, setLevel] = useState<Level>(0)
 
     const [phase, setPhase] = useState(SCENARIO)
@@ -27,17 +28,22 @@ export const SwitchSession = ({close}: Props) => {
             close()
         }
     }, [phase, close, sessionId, level])
-    //
-    // useKeyboard([
-    //     {
-    //         keys: ['z'],
-    //         action: [() => new Promise(() => {
-    //             setPhase(prev => (prev + 1) % 3)
-    //         }), () => new Promise(() => {
-    //             setPhase(prev => prev - 1)
-    //         })]
-    //     },
-    // ], true)
+
+
+    useKeyboard([
+        {
+            matcher: (e: KeyboardEvent) => e.key.toLowerCase() === 'arrowright',
+            action: () => {
+                switch (phase) {
+                    case SCENARIO:
+                        return Promise.resolve(setPhase(LEVEL))
+                    default:
+                        return Promise.resolve(setPhase(DONE))
+                }
+            }
+        },
+
+    ], true)
 
     return <div className={`absolute w-screen h-screen bg-transparent flex justify-center items-center z-20`}>
         <div className={`absolute w-full h-full bg-dark opacity-90  flex justify-center items-center z-20`}>
@@ -57,12 +63,14 @@ export const SwitchSession = ({close}: Props) => {
                 <div className={`flex basis-full flex-col justify-center content-center gap-2`}>
                     <label className={'text-xs'}>Scenario {sessionId}</label>
                     <label className={'text-xs'}>level</label>
-                    <input className={`max-h-0`} autoFocus={phase === LEVEL} onKeyUp={(e) => {
-                        setLevel(parseInt(e.key, 10)%8 as Level)
+                    <input className='max-h-0' autoFocus={phase === LEVEL} onKeyUp={(e) => {
+                        if (`01234567`.includes(e.key)) {
+                            setLevel(parseInt(e.key, 10) as Level)
+                        }
                     }}/>
                     <div className={`bg-inherit flex-row flex justify-between`}>
                         {[0, 1, 2, 3, 4, 5, 6, 7].map(it => <Button
-                            className={`text-sm px-3 ${level === it ? 'bg-highlight text-main' : ''}`} label={`${it}`}
+                            className={`text-sm px-3 ${level === it ? 'bg-highlight text-main' : ''}`} label={`${it===level ? '!' : it}`}
                             onClick={() => {
                                 setLevel(it as Level)
                             }}/>)}

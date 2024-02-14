@@ -21,7 +21,7 @@ function App() {
 
     const commonHandlers = useMemo(() => [
         {
-            matcher: (e: KeyboardEvent) => e.key.toLowerCase() === 'end' && e.code.toLowerCase() !== 'numpad1',
+            matcher: (e: KeyboardEvent) => e.key.toLowerCase() === 'backspace',
             action: () => {
                 switch (phase) {
                     case "town":

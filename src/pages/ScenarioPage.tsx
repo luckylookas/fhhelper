@@ -23,6 +23,7 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
     const [sessionId, setSessionId] = useState<string>('')
     const [level, setLevel] = useState<Level>();
     const session = useSession(firebaseApp, sessionId);
+    const [init, setInit] = useState(false)
 
     useEffect(() => {
         if (!localStorage.getItem("sessionId")) {
@@ -32,15 +33,15 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
             localStorage.setItem("level", '1')
         }
         setLevel(parseInt(localStorage.getItem("level") ?? '1', 10)%8 as Level)
-        debugger;
         setSessionId(localStorage.getItem("sessionId")!)
     }, [])
 
     useEffect(() => {
-        if (session && level) {
+        if (session && level !== undefined && !init) {
+            setInit(true)
             session.setLevel(level).catch(console.log)
         }
-    }, [session, level])
+    }, [session, level, init])
 
     const search = useSearch(firebaseApp, session.list);
 
@@ -50,6 +51,8 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
     const [keyBoardActive, setKeyBoardActive] = useState(true)
     const [numLock, setNumLock] = useState<boolean|undefined>()
     const latestKey = useState<any>()
+
+    const [wasMax, setWasMax] = useState(false)
 
     const addHandler = useCallback((rank: Rank, amount: number) => {
         if (chosenColor === undefined || chosenToken === undefined) {
@@ -86,7 +89,6 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
         {
             matcher: (e: KeyboardEvent) => `arrowdown` === e.key.toLowerCase() && e.code.toLowerCase() === 'numpad2',
             action: (e: KeyboardEvent) => Promise.resolve(session.setElement({wind: session.elements.wind ? 0 : 2}))
-
         },
         {
             matcher: (e: KeyboardEvent) => `arrowleft` === e.key.toLowerCase() && e.code.toLowerCase() === 'numpad4',
@@ -129,7 +131,7 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
 
         },
         {
-            matcher: (e: KeyboardEvent) => `clear` === e.key.toLowerCase(),
+            matcher: (e: KeyboardEvent) => `delete` === e.key.toLowerCase(),
             action: (e: KeyboardEvent) => new Promise(() => {
                 setChosenColor(2)
                 setChosenToken(undefined)
@@ -138,7 +140,7 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
 
         },
         {
-            matcher: (e: KeyboardEvent) => `=` === e.key.toLowerCase(),
+            matcher: (e: KeyboardEvent) => `end` === e.key.toLowerCase(),
             action: (e: KeyboardEvent) => new Promise(() => {
                 setChosenColor(3)
                 setChosenToken(undefined)
@@ -147,23 +149,25 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
 
         },
         {
-            matcher: (e: KeyboardEvent) => `/` === e.key.toLowerCase(),
+            matcher: (e: KeyboardEvent) => `pagedown` === e.key.toLowerCase(),
             action: (e: KeyboardEvent) => new Promise(() => {
                 setChosenColor(4)
                 setChosenToken(undefined)
 
             })
-
         },
         {
-            matcher: (e: KeyboardEvent) => `*` === e.key.toLowerCase(),
-            action: (e: KeyboardEvent) => new Promise(() => {
-                setChosenColor(5)
-                setChosenToken(undefined)
-
-            })
+            matcher: (e: KeyboardEvent) => `arrowleft` === e.key.toLowerCase() && e.code.toLowerCase() !== 'numpad4',
+            action: (e: KeyboardEvent) => Promise.resolve(session.back())
         },
-
+        {
+            matcher: (e: KeyboardEvent) => `arrowright` === e.key.toLowerCase() && e.code.toLowerCase() !== 'numpad6',
+            action: (e: KeyboardEvent) => Promise.resolve(session.advanceRound())
+        },
+        {
+            matcher: (e: KeyboardEvent) => `backspace` === e.key.toLowerCase() && e.code.toLowerCase() !== 'numpad6',
+            action: (e: KeyboardEvent) => Promise.resolve(session.resetSession(session.level ?? 0))
+        },
         {
             matcher: (e: KeyboardEvent): boolean => {
                 latestKey[1]({
@@ -180,19 +184,15 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
         }
     ], [commonKeyBoardControls, latestKey, session])
 
-
     useKeyboard(handlersv2, keyBoardActive)
 
     return <>
-        <h1>
-            {`NUMLOCK: ${numLock}`}
-        </h1>
         {session.round === 0 ?
             <Search {...search}
                     onInput={() => setKeyBoardActive(false)}
                     onBlur={() => setKeyBoardActive(true)}
                     onResultClick={async (result) => await session.add(result)}/> : null}
-        <RoundTracker round={session.round} back={async () => await session.back()}
+        <RoundTracker session={sessionId} round={session.round} back={async () => await session.back()}
                       advanceRound={async () => await session.advanceRound()}/>
         <Elements {...session.elements}
                   setElement={async (partial) => await session.setElement(partial)}/>
@@ -290,9 +290,9 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
 
                             {monster.tokens.map((token, tokenIndex) =>
                                 <li key={`${monster.id}-${tokenIndex}`} className={` 
-                                        ${chosenToken === tokenIndex + 1 && chosenColor === monsterIndex ? 'shadow-glow shadow-highlight z-20' : 'z-1'} 
+                                        ${chosenToken === tokenIndex + 1 && (chosenColor === monsterIndex || chosenToken === undefined) ? 'shadow-glow shadow-highlight z-20' : 'z-1'} 
 
-                                        ${token.rank === ELITE && !(chosenToken === tokenIndex + 1 && chosenColor === monsterIndex) ? `${theme.seethrough ? 'shadow-glow shadow-elite' : 'bg-elite'}` : 'bg-transparent'}
+                                        ${token.rank === ELITE && !(chosenToken === tokenIndex + 1 && (chosenColor === monsterIndex || chosenToken === undefined)) ? `${theme.seethrough ? 'shadow-glow shadow-elite' : 'bg-elite'}` : 'bg-transparent'}
                                          
                                          
                                          flex ${token.hp ? 'flex-row' : 'flex-col'} 

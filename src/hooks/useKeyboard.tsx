@@ -13,10 +13,11 @@ export const useKeyboard  = (handlers: Handler[], active: boolean) => {
             if (event.isComposing || !active) {
                 return;
             }
-            event.stopPropagation()
-            event.preventDefault()
+
             const handler = handlers.find(handler => handler.matcher(event))
             if (handler) {
+                event.stopPropagation()
+                event.preventDefault()
                 handler.action(event).catch(console.log)
             }
 
