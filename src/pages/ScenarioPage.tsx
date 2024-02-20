@@ -49,7 +49,6 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
     const [chosenToken, setChosenToken] = useState<number>()
 
     const [keyBoardActive, setKeyBoardActive] = useState(true)
-    const latestKey = useState<any>()
 
     const addHandler = useCallback((rank: Rank, amount: number) => {
         if (chosenColor === undefined || chosenToken === undefined) {
@@ -160,22 +159,8 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
         {
             matcher: (e: KeyboardEvent) => `backspace` === e.key.toLowerCase() && e.code.toLowerCase() !== 'numpad6',
             action: (e: KeyboardEvent) => Promise.resolve(session.resetSession(session.level ?? 0))
-        },
-        {
-            matcher: (e: KeyboardEvent): boolean => {
-                latestKey[1]({
-                    key: e.key.toLowerCase(),
-                    code: e.code.toLowerCase(),
-                    numLock: e.getModifierState("NumLock"),
-                    handled: false,
-                })
-                return true
-            },
-            action: (e: KeyboardEvent) => {
-                return Promise.resolve()
-            }
         }
-    ], [commonKeyBoardControls, latestKey, session, addHandler])
+    ], [commonKeyBoardControls, session, addHandler])
 
     useKeyboard(handlersv2, keyBoardActive)
 
@@ -194,11 +179,11 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
                 <ol className='flex flex-col flex-1'>
                     <li className='flex flex-col flex-auto'>
                         <h2 onClick={async () => await session.remove(monster.monster)}
-                            className={`${theme.seethrough ? `bg-${colors[monsterIndex % 4]}` : 'bg-inherit'} py-2 text-base text-center cursor-pointer hover:line-through`}>{monster.monster.name}</h2>
+                            className={`${theme.seethrough ? `bg-${colors[monsterIndex]}` : 'bg-inherit'} py-2 text-base text-center cursor-pointer hover:line-through`}>{monster.monster.name}</h2>
 
                         <ol className={`${theme.seethrough ? `border-t-8 border-2 
                         
-                         border-solid border-${colors[monsterIndex % 4]}` : `bg-${colors[monsterIndex % 4]}`}
+                         border-solid border-${colors[monsterIndex]}` : `bg-${colors[monsterIndex]}`}
                          ${chosenColor === monsterIndex && chosenToken === undefined ? 'shadow-glow shadow-highlight z-2' : 'z-1'}`}
 
                         >

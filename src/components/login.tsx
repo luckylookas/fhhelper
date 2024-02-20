@@ -11,7 +11,7 @@ export const Login = () => {
 
     return <div id='loader' className='w-screen h-screen'>
         <div
-            className='border-red border-purple border-green border-blue bg-red bg-green bg-blue bg-purple h-0 bg-elementearth bg-elementice bg-elementfire bg-elementdark bg-elementlight bg-elementwind shadow-elementearth shadow-elementice shadow-elementfire shadow-elementdark shadow-elementlight shadow-elementwind '></div>
+            className='border-white bg-white border-red border-purple border-green border-blue bg-red bg-green bg-blue bg-purple h-0 bg-elementearth bg-elementice bg-elementfire bg-elementdark bg-elementlight bg-elementwind shadow-elementearth shadow-elementice shadow-elementfire shadow-elementdark shadow-elementlight shadow-elementwind '></div>
         <div className='w-screen gap-2 h-screen flex flex-col p-2 z-10 justify-center items-center'>
             <input className='basis-1/8 text-xs border-text border-solid border-b-2 rounded-none'
                    placeholder='email'

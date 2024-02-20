@@ -13,7 +13,7 @@ interface Props {
 }
 
 export const Elements = ({earth, wind, fire, ice, light, dark, setElement}: Props) => {
-    return <div id='elements' className='p-2 flex flex-row gap-2 w-full justify-center content-around'>
+    return <div id='elements' className='pb-2 flex flex-row gap-2 w-full justify-center content-around'>
         <Element value={earth} onClick={async () => {
             await setElement({earth: earth ? 0 : 2})
         }} colorClass={'elementearth'} />

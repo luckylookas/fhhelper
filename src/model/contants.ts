@@ -1,2 +1,2 @@
-export const colors = ['red', 'green', 'blue', 'purple', 'red', 'green', 'blue', 'purple']
+export const colors = ['red', 'green', 'blue', 'purple', 'white', 'red', 'green', 'blue', 'purple', 'white']
 export const themes = ['light', 'dark']

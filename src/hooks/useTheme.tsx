@@ -19,7 +19,6 @@ export const useTheme = () => {
         }
     }, [])
 
-
     useEffect(() => {
         if (!localStorage.getItem("theme")) {
             localStorage.setItem("theme", '0')
