@@ -35,7 +35,6 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
         setLevel(parseInt(localStorage.getItem("level") ?? '1', 10) % 8 as Level)
         setSessionId(localStorage.getItem("sessionId")!)
     }, [])
-
     useEffect(() => {
         if (session && level !== undefined && !init) {
             setInit(true)
@@ -48,7 +47,6 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
     const [chosenColor, setChosenColor] = useState<number>()
     const [chosenToken, setChosenToken] = useState<number>()
     const [chosenOperator, setChosenOperator] = useState<1 | -1 | undefined>(undefined)
-
     const [keyBoardActive, setKeyBoardActive] = useState(true)
 
     const addHandler = useCallback((rank: Rank, amount: number) => {
@@ -74,8 +72,9 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
                     return Promise.resolve();
                 }
 
-                if (!session.list[chosenColor].tokens[chosenToken-1].hp) {
-                    return Promise.resolve(addHandler(e.getModifierState("NumLock") ? NORMAL : ELITE, -1))
+                if (chosenOperator && chosenOperator < 0) {
+                    setChosenOperator(undefined);
+                    return Promise.resolve(addHandler(ELITE, -1))
                 }
 
                 return Promise.resolve(setChosenOperator(-1));
@@ -89,6 +88,7 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
                 }
 
                 if (!session.list[chosenColor].tokens[chosenToken-1].hp) {
+                    setChosenOperator(undefined);
                     return Promise.resolve(addHandler(e.getModifierState("NumLock") ? NORMAL : ELITE, 1))
                 }
 
@@ -99,7 +99,6 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
             matcher: (e: KeyboardEvent) => `end` === e.key.toLowerCase() && e.code.toLowerCase() === 'numpad1',
             action: (e: KeyboardEvent) => Promise.resolve(session.setElement({earth: session.elements.earth ? 0 : 2})).catch()
         },
-
         {
             matcher: (e: KeyboardEvent) => `arrowdown` === e.key.toLowerCase() && e.code.toLowerCase() === 'numpad2',
             action: (e: KeyboardEvent) => Promise.resolve(session.setElement({wind: session.elements.wind ? 0 : 2}))
@@ -207,7 +206,7 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
                   setElement={async (partial) => await session.setElement(partial)}/>
         <div id='monsters' className='leading-none flex flex-row'>
             {session.list.map((monster, monsterIndex) =>
-                <ol className='flex flex-col flex-1'>
+                <ol key={monster.id} className='flex flex-col flex-1'>
                     <li className='flex flex-col flex-auto'>
                         <h2 onClick={async () => await session.remove(monster.monster)}
                             className={`${theme.seethrough ? `bg-${colors[monsterIndex]}` : 'bg-inherit'} py-2 text-base text-center cursor-pointer hover:line-through`}>{monster.monster.name}</h2>
@@ -297,8 +296,6 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
                                             className={'absolute top-0 bg-transparent text-text'}>{monster.monster.speed[2 * monster.level + 1]}</span>
                                     </div>
                                 </div>
-
-
                             </li>
 
                             {monster.tokens.map((token, tokenIndex) =>
@@ -325,7 +322,7 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
                                                 <div
                                                     className='basis-full flex-row flex justify-center bg-inherit gap-2 relative pt-0.5'>
 
-                                                    <div className={`z-10 
+                                                    <div className={`transition-[width] z-10 
                                                     ${token.hp / token.maxHp > 0.75 ? 'bg-goodhealth' : (token.hp / token.maxHp > 0.25 && token.hp > 1 ? 'bg-medhealth' : 'bg-badhealth')} left-0 absolute h-full bottom-1`}
                                                          style={{width: `${token.hp / token.maxHp * 100}%`}}
                                                     />

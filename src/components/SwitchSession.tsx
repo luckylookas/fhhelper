@@ -70,7 +70,7 @@ export const SwitchSession = ({close}: Props) => {
                         }
                     }}/>
                     <div className={`bg-inherit flex-row flex justify-between`}>
-                        {[0, 1, 2, 3, 4, 5, 6, 7].map(it => <Button
+                        {[0, 1, 2, 3, 4, 5, 6, 7].map(it => <Button key={`button-${it}`}
                             className={`text-sm px-3 ${level === it ? 'bg-highlight text-main' : ''}`} label={`${it===level ? '!' : it}`}
                             onClick={() => {
                                 setLevel(it as Level)

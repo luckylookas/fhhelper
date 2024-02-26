@@ -25,7 +25,7 @@ export const Search = ({search, results, onResultClick, onInput, onBlur}: Props)
             <div
                 className={'overflow-visible absolute top-7 left-0 right-0 border-text ml-2 mr-2 shadow-md shadow-text'}>
                 {
-                    results.map(item => <SearchItem item={item} onClick={() => onResultClick(item)} />)
+                    results.map(item => <SearchItem key={item.id} item={item} onClick={() => onResultClick(item)} />)
                 }
             </div> : null
         }

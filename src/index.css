@@ -7,8 +7,6 @@
     font-family: 'Comfortaa', sans-serif;
     @apply select-none;
     @apply box-border;
-    @apply transition-all;
-    @apply duration-200;
     @apply ease-in-out;
     @apply leading-none;
     /*@apply rounded;*/
