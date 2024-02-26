@@ -66,6 +66,7 @@ export const SwitchSession = ({close}: Props) => {
                     <input className='max-h-0' autoFocus={phase === LEVEL} onKeyUp={(e) => {
                         if (`01234567`.includes(e.key)) {
                             setLevel(parseInt(e.key, 10) as Level)
+                            setPhase(DONE)
                         }
                     }}/>
                     <div className={`bg-inherit flex-row flex justify-between`}>
@@ -73,6 +74,7 @@ export const SwitchSession = ({close}: Props) => {
                             className={`text-sm px-3 ${level === it ? 'bg-highlight text-main' : ''}`} label={`${it===level ? '!' : it}`}
                             onClick={() => {
                                 setLevel(it as Level)
+                                setPhase(DONE)
                             }}/>)}
                     </div>
                 </div>
