@@ -32,7 +32,7 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
         if (!localStorage.getItem("level")) {
             localStorage.setItem("level", '1')
         }
-        setLevel(parseInt(localStorage.getItem("level") ?? '1', 10)%8 as Level)
+        setLevel(parseInt(localStorage.getItem("level") ?? '1', 10) % 8 as Level)
         setSessionId(localStorage.getItem("sessionId")!)
     }, [])
 
@@ -47,6 +47,7 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
 
     const [chosenColor, setChosenColor] = useState<number>()
     const [chosenToken, setChosenToken] = useState<number>()
+    const [chosenOperator, setChosenOperator] = useState<1 | -1 | undefined>(undefined)
 
     const [keyBoardActive, setKeyBoardActive] = useState(true)
 
@@ -68,16 +69,37 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
         ...commonKeyBoardControls,
         {
             matcher: (e: KeyboardEvent) => `-` === e.key.toLowerCase(),
-            action: (e: KeyboardEvent) => Promise.resolve(addHandler(e.getModifierState("NumLock") ? NORMAL : ELITE, -1))
+            action: (e: KeyboardEvent) => {
+                if (chosenColor === undefined || !chosenToken) {
+                    return Promise.resolve();
+                }
+
+                if (!session.list[chosenColor].tokens[chosenToken-1].hp) {
+                    return Promise.resolve(addHandler(e.getModifierState("NumLock") ? NORMAL : ELITE, -1))
+                }
+
+                return Promise.resolve(setChosenOperator(-1));
+            }
         },
         {
             matcher: (e: KeyboardEvent) => `+` === e.key.toLowerCase(),
-            action: (e: KeyboardEvent) => Promise.resolve(addHandler(e.getModifierState("NumLock") ? NORMAL : ELITE, 1))
+            action: (e: KeyboardEvent) => {
+                if (chosenColor === undefined || !chosenToken) {
+                    return Promise.resolve();
+                }
+
+                if (!session.list[chosenColor].tokens[chosenToken-1].hp) {
+                    return Promise.resolve(addHandler(e.getModifierState("NumLock") ? NORMAL : ELITE, 1))
+                }
+
+                return Promise.resolve(setChosenOperator(1));
+            }
         },
         {
             matcher: (e: KeyboardEvent) => `end` === e.key.toLowerCase() && e.code.toLowerCase() === 'numpad1',
             action: (e: KeyboardEvent) => Promise.resolve(session.setElement({earth: session.elements.earth ? 0 : 2})).catch()
         },
+
         {
             matcher: (e: KeyboardEvent) => `arrowdown` === e.key.toLowerCase() && e.code.toLowerCase() === 'numpad2',
             action: (e: KeyboardEvent) => Promise.resolve(session.setElement({wind: session.elements.wind ? 0 : 2}))
@@ -99,16 +121,21 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
             action: (e: KeyboardEvent) => Promise.resolve(session.setElement({dark: session.elements.dark ? 0 : 2}))
         },
         {
-          matcher: (e: KeyboardEvent) => `1234567890`.includes(e.key),
-          action: (e: KeyboardEvent) => {
-              const key = parseInt(e.key, 10)
-              return Promise.resolve(setChosenToken(key > 0 ? key : 10))
-          }
+            matcher: (e: KeyboardEvent) => `1234567890`.includes(e.key),
+            action: (e: KeyboardEvent) => {
+                const key = parseInt(e.key, 10)
+                if (chosenOperator !== undefined) {
+                    setChosenOperator(undefined)
+                    return Promise.resolve(addHandler(e.getModifierState("NumLock") ? NORMAL : ELITE, key * chosenOperator))
+                }
+                return Promise.resolve(setChosenToken(key > 0 ? key : 10))
+            }
         },
         {
             matcher: (e: KeyboardEvent) => `home` === e.key.toLowerCase(),
             action: (e: KeyboardEvent) => new Promise(() => {
                 setChosenColor(0)
+                setChosenOperator(undefined)
                 setChosenToken(undefined)
             })
 
@@ -117,6 +144,7 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
             matcher: (e: KeyboardEvent) => `pageup` === e.key.toLowerCase(),
             action: (e: KeyboardEvent) => new Promise(() => {
                 setChosenColor(1)
+                setChosenOperator(undefined)
                 setChosenToken(undefined)
 
             })
@@ -126,6 +154,7 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
             matcher: (e: KeyboardEvent) => `delete` === e.key.toLowerCase(),
             action: (e: KeyboardEvent) => new Promise(() => {
                 setChosenColor(2)
+                setChosenOperator(undefined)
                 setChosenToken(undefined)
 
             })
@@ -135,6 +164,7 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
             matcher: (e: KeyboardEvent) => `end` === e.key.toLowerCase(),
             action: (e: KeyboardEvent) => new Promise(() => {
                 setChosenColor(3)
+                setChosenOperator(undefined)
                 setChosenToken(undefined)
 
             })
@@ -144,6 +174,7 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
             matcher: (e: KeyboardEvent) => `pagedown` === e.key.toLowerCase(),
             action: (e: KeyboardEvent) => new Promise(() => {
                 setChosenColor(4)
+                setChosenOperator(undefined)
                 setChosenToken(undefined)
 
             })
