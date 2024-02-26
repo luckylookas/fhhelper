@@ -5,7 +5,6 @@ interface Props {
     session: string
     back: () => void
     advanceRound: () => void
-
 }
 
 export const RoundTracker = ({round, back, advanceRound, session}: Props) => {

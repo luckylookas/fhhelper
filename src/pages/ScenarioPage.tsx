@@ -191,7 +191,7 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
             matcher: (e: KeyboardEvent) => `backspace` === e.key.toLowerCase() && e.code.toLowerCase() !== 'numpad6',
             action: (e: KeyboardEvent) => Promise.resolve(session.resetSession(session.level ?? 0))
         }
-    ], [commonKeyBoardControls, session, addHandler])
+    ], [commonKeyBoardControls, session, addHandler, chosenColor, chosenToken, chosenOperator])
 
     useKeyboard(handlersv2, keyBoardActive)
 
