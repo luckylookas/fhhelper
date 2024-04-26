@@ -31,8 +31,4 @@ export const useKeyboard  = (handlers: Handler[], active: boolean) => {
             document.onkeydown = null
         }
     }, [handler])
-
-
-
-
 }

@@ -133,7 +133,8 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
         {
             matcher: (e: KeyboardEvent) => `home` === e.key.toLowerCase(),
             action: (e: KeyboardEvent) => new Promise(() => {
-                setChosenColor(0)
+
+                setChosenColor((e.getModifierState('NumLock') ? 0 : colors.length))
                 setChosenOperator(undefined)
                 setChosenToken(undefined)
             })
@@ -142,7 +143,7 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
         {
             matcher: (e: KeyboardEvent) => `pageup` === e.key.toLowerCase(),
             action: (e: KeyboardEvent) => new Promise(() => {
-                setChosenColor(1)
+                setChosenColor(1 + (e.getModifierState('NumLock') ? 0 : colors.length))
                 setChosenOperator(undefined)
                 setChosenToken(undefined)
 
@@ -152,7 +153,7 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
         {
             matcher: (e: KeyboardEvent) => `delete` === e.key.toLowerCase(),
             action: (e: KeyboardEvent) => new Promise(() => {
-                setChosenColor(2)
+                setChosenColor(2 + (e.getModifierState('NumLock') ? 0 : colors.length))
                 setChosenOperator(undefined)
                 setChosenToken(undefined)
 
@@ -162,7 +163,7 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
         {
             matcher: (e: KeyboardEvent) => `end` === e.key.toLowerCase(),
             action: (e: KeyboardEvent) => new Promise(() => {
-                setChosenColor(3)
+                setChosenColor(3 + (e.getModifierState('NumLock') ? 0 : colors.length))
                 setChosenOperator(undefined)
                 setChosenToken(undefined)
 
@@ -172,7 +173,7 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
         {
             matcher: (e: KeyboardEvent) => `pagedown` === e.key.toLowerCase(),
             action: (e: KeyboardEvent) => new Promise(() => {
-                setChosenColor(4)
+                setChosenColor(4 + (e.getModifierState('NumLock') ? 0 : colors.length))
                 setChosenOperator(undefined)
                 setChosenToken(undefined)
 
@@ -200,6 +201,7 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
                     onInput={() => setKeyBoardActive(false)}
                     onBlur={() => setKeyBoardActive(true)}
                     onResultClick={async (result) => await session.add(result)}/> : null}
+
         <RoundTracker session={sessionId} round={session.round} back={async () => await session.back()}
                       advanceRound={async () => await session.advanceRound()}/>
         <Elements {...session.elements}
@@ -209,11 +211,11 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
                 <ol key={monster.id} className='flex flex-col flex-1'>
                     <li className='flex flex-col flex-auto'>
                         <h2 onClick={async () => await session.remove(monster.monster)}
-                            className={`${theme.seethrough ? `bg-${colors[monsterIndex]}` : 'bg-inherit'} py-2 text-base text-center cursor-pointer hover:line-through`}>{monster.monster.name}</h2>
+                            className={`${theme.seethrough ? `bg-${colors[monsterIndex%colors.length]}` : 'bg-inherit'} py-2 text-base text-center cursor-pointer hover:line-through`}>{monster.monster.name}</h2>
 
                         <ol className={`${theme.seethrough ? `border-t-8 border-2 
                         
-                         border-solid border-${colors[monsterIndex]}` : `bg-${colors[monsterIndex]}`}
+                         border-solid border-${colors[monsterIndex%colors.length]}` : `bg-${colors[monsterIndex%colors.length]}`}
                          ${chosenColor === monsterIndex && chosenToken === undefined ? 'shadow-glow shadow-highlight z-2' : 'z-1'}`}
 
                         >

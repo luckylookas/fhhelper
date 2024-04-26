@@ -8,12 +8,14 @@ import {TownPage} from "./pages/TownPage";
 import {ScenarioPage} from "./pages/ScenarioPage";
 import {useTheme} from "./hooks/useTheme";
 import {PageContainer} from "./hooks/PageContainer";
+import {useAppDispatch} from "./saga/hooks";
+import {endScenario} from "./saga/store";
 
 function App() {
     const townName = useMemo(() => {
         return new URLSearchParams(window.location.search).get("town") ?? "lastChristmateers"
     }, [])
-
+    const dispatch = useAppDispatch();
     const {firebaseApp} = useFirebase();
     const {seethrough, theme} = useTheme();
 
@@ -27,10 +29,11 @@ function App() {
                     case "town":
                         return Promise.resolve(setPhase('switchSession'))
                     default:
+                        dispatch(endScenario());
                         return Promise.resolve(setPhase('town'))
                 }
             }
-        }], [phase])
+        }], [phase, dispatch])
 
     useEffect(() => {
         if (firebaseApp && phase === 'login') {

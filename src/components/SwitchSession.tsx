@@ -2,6 +2,8 @@ import React, {useEffect, useRef, useState} from "react";
 import {Button} from "./button";
 import {Level} from "../model/model";
 import {useKeyboard} from "../hooks/useKeyboard";
+import {useAppDispatch} from "../saga/hooks";
+import {startScenario} from "../saga/store";
 
 interface Props {
     close: () => void
@@ -14,6 +16,7 @@ const DONE = 0
 export const SwitchSession = ({close}: Props) => {
     const [sessionId, setSessionId] = useState<string>('')
     const [level, setLevel] = useState<Level>(0)
+    const dispatch = useAppDispatch();
 
     const [phase, setPhase] = useState(SCENARIO)
 
@@ -56,6 +59,7 @@ export const SwitchSession = ({close}: Props) => {
                            className='basis-1/8 text-xs border-text border-solid border-b-2 rounded-none'
                            placeholder='scenario' value={sessionId} onChange={(e) => {
                         setSessionId(e.target.value)
+                        dispatch(startScenario(e.target.value))
                     }}/>
                 </div>
             }
