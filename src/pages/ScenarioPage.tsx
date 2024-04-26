@@ -134,7 +134,7 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
             matcher: (e: KeyboardEvent) => `home` === e.key.toLowerCase(),
             action: (e: KeyboardEvent) => new Promise(() => {
 
-                setChosenColor((e.getModifierState('NumLock') ? 0 : colors.length))
+                setChosenColor(0)
                 setChosenOperator(undefined)
                 setChosenToken(undefined)
             })
@@ -143,7 +143,7 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
         {
             matcher: (e: KeyboardEvent) => `pageup` === e.key.toLowerCase(),
             action: (e: KeyboardEvent) => new Promise(() => {
-                setChosenColor(1 + (e.getModifierState('NumLock') ? 0 : colors.length))
+                setChosenColor(1 )
                 setChosenOperator(undefined)
                 setChosenToken(undefined)
 
@@ -153,7 +153,7 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
         {
             matcher: (e: KeyboardEvent) => `delete` === e.key.toLowerCase(),
             action: (e: KeyboardEvent) => new Promise(() => {
-                setChosenColor(2 + (e.getModifierState('NumLock') ? 0 : colors.length))
+                setChosenColor(2)
                 setChosenOperator(undefined)
                 setChosenToken(undefined)
 
@@ -163,7 +163,7 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
         {
             matcher: (e: KeyboardEvent) => `end` === e.key.toLowerCase(),
             action: (e: KeyboardEvent) => new Promise(() => {
-                setChosenColor(3 + (e.getModifierState('NumLock') ? 0 : colors.length))
+                setChosenColor(3 )
                 setChosenOperator(undefined)
                 setChosenToken(undefined)
 
@@ -173,7 +173,7 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
         {
             matcher: (e: KeyboardEvent) => `pagedown` === e.key.toLowerCase(),
             action: (e: KeyboardEvent) => new Promise(() => {
-                setChosenColor(4 + (e.getModifierState('NumLock') ? 0 : colors.length))
+                setChosenColor(4 )
                 setChosenOperator(undefined)
                 setChosenToken(undefined)
 
