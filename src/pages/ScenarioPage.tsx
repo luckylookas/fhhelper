@@ -108,6 +108,26 @@ export const ScenarioPage = ({theme, firebaseApp, commonKeyBoardControls}: Props
             action: (e: KeyboardEvent) => Promise.resolve(session.setElement({fire: session.elements.fire ? 0 : 2}))
         },
         {
+            matcher: (e: KeyboardEvent) => `arrowdown` === e.key.toLowerCase() && e.code.toLowerCase() !== 'numpad2',
+            action: (e: KeyboardEvent) => Promise.resolve(setChosenColor(prev => {
+                if (!prev) {
+                    return session.list.length-1;
+                }
+                return prev - 1;
+
+            }))
+        },
+        {
+            matcher: (e: KeyboardEvent) => `arrowup` === e.key.toLowerCase() && e.code.toLowerCase() !== 'numpad8',
+            action: (e: KeyboardEvent) => Promise.resolve(setChosenColor(prev => {
+                if (prev === undefined || prev === session.list.length-1) {
+                    return 0;
+                }
+                return prev + 1
+
+            }))
+        },
+        {
             matcher: (e: KeyboardEvent) => `clear` === e.key.toLowerCase() && e.code.toLowerCase() === 'numpad5',
             action: (e: KeyboardEvent) => Promise.resolve(session.setElement({ice: session.elements.ice ? 0 : 2}))
         },
